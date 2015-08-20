@@ -1,0 +1,204 @@
+EEDD: An Empty Event-Driven Daemon
+
+   This document describes the design and internal organization of
+eedd.  This document is for developers and maintainers of eedd.
+Please see http://linuxtoys.org/eedd/eedd.html for an introduction
+to the empty daemon.
+
+
+
+CONTENTS
+   This document is broken into the following sections:
+- System Overview
+- Nomenclature
+- User Interface to the Daemon
+- Program Design
+  -- Data Structures
+  -- Algorithms
+
+
+
+SYSTEM OVERVIEW
+   The empty event-driven daemon is empty in the sense that the daemon
+itself only provides a command line interface, leaving the real
+functionality of the daemon to a set of loadable shared object plug-ins.
+Features of the empty daemon include:
+  - Command line tools to view and set plug-in parameters
+  - All commands and data are printable ASCII
+  - Modular plug-ins for easy development and debug
+  - A ready-to-run, event-driven daemon
+
+   The daemon listens for TCP connections and then expects one of five
+ASCII commands to sent on the connection.  All commands are terminated
+with a new line.  Commands include:
+   edloadso <plug-in.so>
+   edget <name|ID#> <resource_name>
+   edset <name|ID#> <resource_name> <value>
+   edcat <name|ID#> <resource_name>
+   edlist [name|ID#] 
+
+
+NOMENCLATURE
+   There are just a few terms but you should have a clear understanding 
+of them before you proceed with the rest of the document.
+- eedd - The core executable that has main(), select(), and utility 
+  routines for timers and file IO callback handling.
+- plug-in - A loadable shared object file that is attached to eedd.
+  Plug-ins typically open devices for sensor input, or open TCP
+  connection to an eedd instance (perhaps the same process) to
+  send commands to it.
+- slot/name - When a plug-in is loaded its assigned a slot number.
+  The empty daemon takes slot #0 so loaded plug-ins are assigned
+  slots from #1 upwards.  When a plug-in is loaded it gives itself
+  a name.  Commands can use either the name or the slot number to
+  specify a plug-in.
+- resource - A plug-in parameter that is made visible using the
+  edget, edset, and edcat commands.  Resources are one of three
+  types: read-only, read-write, and broadcast.  Read-only is often
+  associated with a status, read-write with a configuration, and
+  broadcast with stream of sensor data.
+- monitor - The use of edcat to continuously read broadcast data
+  as it is made available.
+
+
+
+USER INTERFACE
+   Eedd's ASCII over TCP user interface gives you the ability to
+read, write, and monitor resources from any plug-in.  You can
+specify a plug-in by its slot number or by the name chosen by
+the plug-in when it was loaded.  It is possible to load a plug-in
+multiple times or to load different plug-ins that have the same
+name.  When this happens you will need to use the slot number
+to address the second plug-in since the look-up of a plug-in
+name stops on the first match.
+   Without a lot of explanation, here again is the syntax of
+the five command available in the UI.
+  edloadso <plug-in.so>
+  edget <name|ID#> <resource_name>
+  edset <name|ID#> <resource_name> <value>
+  edcat <name|ID#> <resource_name>
+  edlist [name|ID#] 
+
+The edcat command is permanent in that the only way to stop the
+feed of input data from the broadcast resource is to close the
+TCP connection to the daemon.
+   The above commands are the protocol used over the TCP link,
+however the above commands as also implemented as Linux programs.
+One nice thing about the programs is that their syntax is identical
+to that of the above protocol.  For example you can telnet to
+localhost port 8870 and enter
+the following:
+   edset motors dir 50
+Or you can run the edset command from your PC command prompt: 
+   edset motors dir 50
+The only real difference between the TCP protocol and the Linux
+commands is that you specify a port number on the Linux commands.
+
+
+
+PROGRAM DESIGN
+   Below is a description of the design of the empty daemon from
+the perspective of important data structures, program start, and
+code layout.
+
+-- Data Structures
+There are separate data structures for eedd, slots, resources,
+and TCP connections.  As noted above, eedd has connections and
+slots, and slots have resources.
+
+   There is exactly one instance of the EEDD data structure in
+the system.  EEDD is the root of a tree with slots/resources
+underneath it.  The EEDD data structure has the following fields:
+- int      port;           // TCP for UI connections
+- SLOT     slot[NUM_SLOT]; // plug-in info table
+- int      slotqty;        // number of occupied slots 
+
+   Each slot has an instance of a plug-in assigned to it.  The
+SLOT data structure has the following fields:
+- int      slot_id;        // zero indexed slot number for this slot
+- char    *name;           // Human readable name of plug-in in slot
+- char    *desc;           // Very brief description of plug-in
+- char    *help;           // Full text of help for plug-in
+- char    *soname;         // shared object file name
+- void    *handle;         // dlopen() handle for soname
+- void    *tran;           // Pointer to plug-in's transparent data
+- RSC      rsc[NUM_RSC];   // Resources visible on this slot
+   There are a few fields in SLOT worth mentioning.  The soname comes
+from either the command line (-s option) or a edloadso command.
+   After edserver loads the soname driver file it uses dlsym() to
+look up the location of the "Initialize" function which it then calls.
+Part of each plug-in's initialization sequence is to malloc a data
+structure for that instance of the plug-in.  The plug-in fills in its
+data structure and places a pointer to it in the tran field of its
+SLOT structure.
+   Each plug-in has a set of resources associated with it.  Part of
+the plug-in's initialization sequence is to fill in the RSC data
+structure for each of the plug-in's resources.
+
+   Resources are described by the RSC data structure:
+- char     *name;       // User visible name of the resource
+- void    (*pgscb) ();  // Handler for get/set cmds from UI
+- void     *slot;       // Pointer to resource's SLOT
+- int       bkey;       // Broadcast key.  Broadcast data if set
+- int       flags;      // broadcast | read-only | read-write
+- int       uilock;     // UI ID # of session awaiting read reply
+   It may take a few milliseconds for the plug-in to read a value
+from the underlying driver or piece of equipment.  We don't want
+to wait for the reply so we put the UI session number in uilock.
+This way when the response does come in we know where to send it.
+   By their nature some resources are read-only, read-write, or
+sensor broadcast.  (Some resources could be considered write-only
+but we make these read-write.)  An invalid access generates an
+error message.
+   The bkey structure member is a token which, if non-zero,
+indicates that at least one UI session wants to read any broadcast
+data from this resource.  To make the token unique per system
+resource it is set to a combination of slot, and resource ID.
+The bkey is set by a UI session and is cleared when the plug-in
+tries to broadcast the sensor data but finds that no UI is
+monitoring it.
+
+   There is one instance of the UI structure per TCP connection
+to a user or other control program.  The UI structure has the
+following fields:
+- int   cn;           // connection index for this conn 
+- int   fd;           // FD of TCP conn (=-1 if not in use) 
+- int   bkey;         // broadcast slot/rsc info, else zero 
+- int   o_port;       // Other-end TCP port number 
+- int   o_ip;         // Other-end IP address 
+- int   cmdindx;      // Index of next location in cmd buffer 
+- char  cmd[MXCMD];   // command from UI program 
+   UI session are pretty straightforward.  The cmd buffer holds
+characters until a newline is found and the command is processed.
+You may recall that the cat command is permanent in that you must
+close the connection to turn off the stream of sensor or input
+data.  If the bkey field is non-zero then the connection is locked
+in a sensor cat or bidirectional channel.  The bkey field is
+encoded with the slot and ID of the resource that is locked in an
+edcat session.
+
+
+-- Algorithms
+   While edserver is fairly simple overall there is one algorithms
+that you should understand before working on the code.  
+- Broadcast - Some sensors, such as a quadrature decoder can be
+sent to more than one UI TCP connection.  This allows, for example,
+a quadrature decoder to be an input to both the speed control and
+navigation programs even if they are completely separate tasks.  The
+edcat command has the slot and resource to monitor.  These two values
+(slot/rsc) are combined into an integer value called bkey.  The value
+is copied to the resource structure and to the UI structure.  When
+data comes into the resource the plug-in will look at the bkey to see 
+if any UIs are waiting for it.  If so, the plug-in formats the data
+and calls bcst_data().  The bcst_data() routine looks at all the UI
+sessions to see which one wants the data.  When a second UI session
+joins, it overwrites the bkey in the resource (but the value is the
+same slot/rsc) and now when the plug-in calls bcst_data() it will find
+two UIs waiting for the data.  When a UI connection is dropped its
+bkey value is cleared.  If, for this example, both UIs drop, then
+the bcst_data() routine will be called but find that no UI wants
+the data. When this happens, bcst_data() clears the bkey in the
+resource struct.  The bkey mechanism saves CPU cycles by letting
+plug-ins avoid the effort of formatting the data and attempting to
+broadcast it when no user session wants the data.
+
