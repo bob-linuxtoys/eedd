@@ -49,7 +49,7 @@ int      ntimers = 0;  // number of timers in use
  ***************************************************************************/
 static void      update_fdsets(); // set fd_set before use by select()
 struct timeval  *doTimer();
-static long long tv2ms(struct timeval *);
+static long long tv2us(struct timeval *);
 
 extern SLOT      Slots[];   // table of plug-in info
 extern ED_FD     Ed_Fd[];   // Array of open FDs and callbacks
@@ -309,7 +309,7 @@ struct timeval *doTimer()
         // LOG(LOG_WARNING, TM, E_No_Date);
         return ((struct timeval *) 0);
     }
-    now = tv2ms(&tv);
+    now = tv2us(&tv);
 
     /* Walk the array looking for timers with a timeout less than now */
     /* We can stop looking at timers when we've looked at ntimers of them */
@@ -334,9 +334,9 @@ struct timeval *doTimer()
         // Is it a PERIODIC timer ?
         if (Timers[i].type == ED_PERIODIC) { /* Periodic, so reschedule */
             (Timers[i].cb) ((void *) &Timers[i], Timers[i].pcb_data); /* Do the callback */
-            Timers[i].to += Timers[i].ms;
+            Timers[i].to += Timers[i].us;
             if (Timers[i].to < now) { /* CPU hog made us miss a period? */
-                printf("Missed TO on %d (%d) by %lld ms\n", i, Timers[i].ms, (now - Timers[i].to));
+                printf("Missed TO on %d (%d) by %lld ms\n", i, Timers[i].us, (now - Timers[i].to));
                 Timers[i].to = now;
             }
         }
@@ -380,9 +380,8 @@ struct timeval *doTimer()
     if ((nextto - now) < 0) {     // next timeout is in the past (CPU hog?)
         nextto = now;
     }
-    select_tv.tv_sec = (nextto - now) / 1000;
-    select_tv.tv_usec = (suseconds_t) (((nextto - now) % 1000) * 1000);
-
+    select_tv.tv_sec = (nextto - now) / 1000000;
+    select_tv.tv_usec = (suseconds_t) ((nextto - now) % 1000000);
     return (&select_tv);
 }
 
@@ -437,8 +436,8 @@ void *add_timer(        // address of timer struct allocated
 
     /* OK, we've got the ED_TIMER struct, now fill it in */
     Timers[i].type = type;          /* one-shot or periodic */
-    Timers[i].to = tv2ms(&tv) + ms; /* ms from Epoch to timeout */
-    Timers[i].ms = ms;              /* ms from now to timeout */
+    Timers[i].to = tv2us(&tv) + (ms * 1000); /* us from Epoch to timeout */
+    Timers[i].us = ms * 1000;       /* period or interval in uS */
     Timers[i].cb = cb;              /* callback routine */
     Timers[i].pcb_data = pcb_data;  /* callback data */
 
@@ -473,16 +472,16 @@ void del_timer(
 
 
 /***************************************************************************
- * tv2ms(): - convert a timeval struct to long long of milliseconds.
+ * tv2us(): - convert a timeval struct to long long of microseconds.
  *
  * Input:        Pointer to a timer structure
  * Output:       long long
  * Effects:      No side effects
  ***************************************************************************/
-static long long tv2ms(
+static long long tv2us(
     struct timeval *ptv)
 {
-    return ((ptv->tv_sec * 1000) + (ptv->tv_usec / 1000));
+    return ((ptv->tv_sec * 1000000) + ptv->tv_usec);
 }
 
 

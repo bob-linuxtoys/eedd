@@ -205,7 +205,7 @@ void globalinit()
         Timers[i].type     = ED_UNUSED;
         Timers[i].type     = 0;           // one-shot, periodic, or unused
         Timers[i].to       = (long long) 0; // ms since Jan 1, 1970 to timeout
-        Timers[i].ms       = 0;           // ms from now to timeout
+        Timers[i].us       = 0;           // period or timeout interval in uS
         Timers[i].cb       = NULL;        // Callback on timeout
         Timers[i].pcb_data = (void *) NULL; // data included in call of callbacks
     }

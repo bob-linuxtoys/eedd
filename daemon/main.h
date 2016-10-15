@@ -66,8 +66,8 @@ typedef struct {
     /* structure for the timers and their callbacks */
 typedef struct {
     int       type;            // one-shot, periodic, or unused
-    long long to;              // ms since Jan 1, 1970 to timeout
-    unsigned int ms;           // ms from now to timeout
+    long long to;              // us since Jan 1, 1970 to timeout
+    unsigned int us;           // period or timeout interval
     void      (*cb) ();        // Callback on timeout
     void     *pcb_data;        // data included in call of callbacks
 } ED_TIMER;
