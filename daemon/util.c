@@ -49,7 +49,7 @@ int      ntimers = 0;  // number of timers in use
  ***************************************************************************/
 static void      update_fdsets(); // set fd_set before use by select()
 struct timeval  *doTimer();
-static long long tv2us(struct timeval *);
+static unsigned long long tv2us(struct timeval *);
 
 extern SLOT      Slots[];   // table of plug-in info
 extern ED_FD     Ed_Fd[];   // Array of open FDs and callbacks
@@ -291,8 +291,8 @@ void edlog(
 struct timeval *doTimer()
 {
     struct timeval tv;  // timeval struct to hold "now"
-    long long now;      // "now" in milliseconds since Epoch
-    long long nextto;   // Next timeout
+    unsigned long long now;      // "now" in milliseconds since Epoch
+    unsigned long long nextto;   // Next timeout
     int    i;           // loop counter
     int    count;       // how many timers we've checked
 
@@ -336,7 +336,7 @@ struct timeval *doTimer()
             (Timers[i].cb) ((void *) &Timers[i], Timers[i].pcb_data); /* Do the callback */
             Timers[i].to += Timers[i].us;
             if (Timers[i].to < now) { /* CPU hog made us miss a period? */
-                printf("Missed TO on %d (%d) by %lld ms\n", i, Timers[i].us, (now - Timers[i].to));
+                edlog(M_MISSTO, i);
                 Timers[i].to = now;
             }
         }
@@ -382,6 +382,7 @@ struct timeval *doTimer()
     }
     select_tv.tv_sec = (nextto - now) / 1000000;
     select_tv.tv_usec = (suseconds_t) ((nextto - now) % 1000000);
+
     return (&select_tv);
 }
 
@@ -478,10 +479,10 @@ void del_timer(
  * Output:       long long
  * Effects:      No side effects
  ***************************************************************************/
-static long long tv2us(
+static unsigned long long tv2us(
     struct timeval *ptv)
 {
-    return ((ptv->tv_sec * 1000000) + ptv->tv_usec);
+    return ((((unsigned long long)ptv->tv_sec) * 1000000) + ptv->tv_usec);
 }
 
 

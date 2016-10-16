@@ -204,6 +204,7 @@ void prompt(
 #define M_BADMLOCK    "Memory page locking failed with error: %s"
 #define M_NOUI        "No free UI sessions"
 #define M_BADCONN     "Error accepting UI connection. errno=%d"
+#define M_MISSTO      "Missed TO on %d.  Rescheduling"
 
 
 
