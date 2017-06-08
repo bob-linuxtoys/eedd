@@ -195,7 +195,7 @@ void usercmd(
     }
     else if ((cmd == EDSET) && (rscid == RSC_PERIOD)) {
         ret = sscanf(val, "%d", &nperiod);
-        if ((ret != 1) || (nperiod < 1)) {  // one value greater than 0
+        if ((ret != 1) || (nperiod < 0)) {
             ret = snprintf(buf, *plen, E_BDVAL, pslot->rsc[rscid].name);
             return;
         }
