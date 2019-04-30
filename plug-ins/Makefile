@@ -3,7 +3,7 @@
 #
 #  Description: This is the top level Makefile for the plug-ins
 #
-#  Copyright:   Copyright (C) 2015 by Bob Smith
+#  Copyright:   Copyright (C) 2019 by Demand Peripherals, Inc.
 #               All rights reserved.
 #
 #  License:     This program is free software; you can redistribute it and/or

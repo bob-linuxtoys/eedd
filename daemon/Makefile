@@ -3,7 +3,7 @@
 #
 #  Description: This is the Makefile for the empdy daemon
 #
-#  Copyright:   Copyright (C) 2015 by Bob Smith (bsmith@linuxtoys.org)
+#  Copyright:   Copyright (C) 2019 by Demand Peripherals, Inc.
 #               All rights reserved.
 #
 #  License:     This program is free software; you can redistribute it and/or
@@ -25,40 +25,41 @@ OBJ = ../build/obj
 includes = $(INC)/main.h
 
 objects = $(OBJ)/main.o $(OBJ)/util.o $(OBJ)/ui.o
-edcliobjects  = $(OBJ)/edcli.o
+edcliobjects  = $(OBJ)/cli.o
 
 DEBUG_FLAGS = -g -ggdb
 RELEASE_FLAGS = -O3
 CFLAGS = -I$(INC) $(DEBUG_FLAGS) -D LIB_DIR="\"$(INST_LIB_DIR)"/\" -Wall -pthread
+CFLAGS += -D CPREFIX="\"$(CPREFIX)"\" -D DEF_UIPORT=$(DEF_UIPORT)
 
-all: eedd edcli
+all: $(CPREFIX)daemon $(CPREFIX)cli
 
-eedd : $(objects)
+$(CPREFIX)daemon : $(objects)
 	$(CC) -o $(BIN)/$@ $(objects) -rdynamic -ldl
 
-edcli : $(edcliobjects)
+$(CPREFIX)cli : $(edcliobjects)
 	$(CC) -o $(BIN)/$@ $(edcliobjects)
 
 $(OBJ)/%.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $^
 
 install:
-	/usr/bin/install -m 755  $(BIN)/eedd $(INST_BIN_DIR)
-	/usr/bin/install -m 755  $(BIN)/edcli $(INST_BIN_DIR)
-	ln -sf $(INST_BIN_DIR)/edcli $(INST_BIN_DIR)/edlist
-	ln -sf $(INST_BIN_DIR)/edcli $(INST_BIN_DIR)/edset
-	ln -sf $(INST_BIN_DIR)/edcli $(INST_BIN_DIR)/edget
-	ln -sf $(INST_BIN_DIR)/edcli $(INST_BIN_DIR)/edcat
-	ln -sf $(INST_BIN_DIR)/edcli $(INST_BIN_DIR)/edloadso
+	/usr/bin/install -m 755  $(BIN)/$(CPREFIX)daemon $(INST_BIN_DIR)
+	/usr/bin/install -m 755  $(BIN)/$(CPREFIX)cli $(INST_BIN_DIR)
+	ln -sf $(INST_BIN_DIR)/$(CPREFIX)cli $(INST_BIN_DIR)/$(CPREFIX)list
+	ln -sf $(INST_BIN_DIR)/$(CPREFIX)cli $(INST_BIN_DIR)/$(CPREFIX)set
+	ln -sf $(INST_BIN_DIR)/$(CPREFIX)cli $(INST_BIN_DIR)/$(CPREFIX)get
+	ln -sf $(INST_BIN_DIR)/$(CPREFIX)cli $(INST_BIN_DIR)/$(CPREFIX)cat
+	ln -sf $(INST_BIN_DIR)/$(CPREFIX)cli $(INST_BIN_DIR)/$(CPREFIX)loadso
 
 uninstall:
-	rm -f $(INST_BIN_DIR)/eedd
-	rm -f $(INST_BIN_DIR)/edcli
-	rm -f $(INST_BIN_DIR)/edlist
-	rm -f $(INST_BIN_DIR)/edset
-	rm -f $(INST_BIN_DIR)/edget
-	rm -f $(INST_BIN_DIR)/edcat
-	rm -f $(INST_BIN_DIR)/edloadso
+	rm -f $(INST_BIN_DIR)/$(CPREFIX)daemon
+	rm -f $(INST_BIN_DIR)/$(CPREFIX)cli
+	rm -f $(INST_BIN_DIR)/$(CPREFIX)list
+	rm -f $(INST_BIN_DIR)/$(CPREFIX)set
+	rm -f $(INST_BIN_DIR)/$(CPREFIX)get
+	rm -f $(INST_BIN_DIR)/$(CPREFIX)cat
+	rm -f $(INST_BIN_DIR)/$(CPREFIX)loadso
 
 
 .PHONY : clean

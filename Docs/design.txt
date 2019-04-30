@@ -12,6 +12,7 @@ CONTENTS
 - System Overview
 - Nomenclature
 - User Interface to the Daemon
+- Build Notes
 - Program Design
   -- Data Structures
   -- Algorithms
@@ -93,6 +94,25 @@ Or you can run the edset command from your PC command prompt:
    edset motors dir 50
 The only real difference between the TCP protocol and the Linux
 commands is that you specify a port number on the Linux commands.
+
+
+
+BUILD NOTES
+    While you can use the commands edset, edget, edcat, edlist,
+and edloadso as is, you may find that your application needs
+would be better served if you could rename then commands to
+better match your application.  You can easy override the 'ed'
+part of the commands with a string of your choosing.  For example,
+let's say you want the command for your robot control program to
+be roboset, roboget, robocat, and robolist, and you want the TCP
+port for the program to be on port 7788.  You can do this with
+the following:
+  export CPREFIX="robo"
+  export DEF_UIPORT=7788
+  make ; make install
+Alternatively you could use
+  CPREFIX="robo" DEF_UIPORT=7788 make
+  CPREFIX="robo" DEF_UIPORT=7788 make install
 
 
 

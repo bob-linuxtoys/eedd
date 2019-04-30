@@ -4,7 +4,7 @@
  * Description: This file contains the define's and data structures for use
  *              in the empty event-driven daemon
  *
- * Copyright:   Copyright (C) 2015 by Bob Smith (bsmith@linuxtoys.org)
+ * Copyright:   Copyright (C) 2019 by Demand Peripherals, Inc.
  *              All rights reserved.
  *
  * License:     This program is free software; you can redistribute it and/or
@@ -24,14 +24,24 @@
 
 #include "../plug-ins/include/eedd.h"
 
+
+/***************************************************************************
+ *  - Customization of eedd to use a different name/port
+ ***************************************************************************/
+#ifndef CPREFIX
+#define CPREFIX       "ed"
+#endif
+#ifndef DEF_UIPORT
+#define DEF_UIPORT    8870     /* Default TCP port for ui connections */
+#endif
+
+
 /***************************************************************************
  *  - Defines
  ***************************************************************************/
 #define MX_FD           50     /* maximum # of file descriptor in select() call */
 #define MX_TIMER        50     /* maximum # of timers */
 #define MX_UI           50     /* maximum # of UI connections */
-
-#define DEF_UIPORT    8870     /* Default TCP port for ui connections */
 
     /* UI sessions are stateful.  Here are the states */
 #define CMDSTATE         0     /* waiting for command from UI */

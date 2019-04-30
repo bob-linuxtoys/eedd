@@ -4,7 +4,7 @@
  * Description: This file contains FD read/write demultiplexing, timers and 
  *              the log utilities for the empty daemon.
  *
- * Copyright:   Copyright (C) 2015 by Bob Smith (bsmith@linuxtoys.org)
+ * Copyright:   Copyright (C) 2019 by Demand Peripherals, Inc.
  *              All rights reserved.
  *
  * License:     This program is free software; you can redistribute it and/or

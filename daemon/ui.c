@@ -4,7 +4,7 @@
  * Description: This file contains code to handle the protocol and 
  *              connections from users of the empty daemon.
  *
- * Copyright:   Copyright (C) 2015 by Bob Smith (bsmith@linuxtoys.org)
+ * Copyright:   Copyright (C) 2019 by Demand Peripherals, Inc.
  *              All rights reserved.
  *
  * License:     This program is free software; you can redistribute it and/or
@@ -35,7 +35,6 @@
 #include <arpa/inet.h> /* for inet_addr() */
 #include <dlfcn.h>
 #include "main.h"
-
 
 
 /***************************************************************************
@@ -97,15 +96,15 @@ void parse_and_execute(UI *pui)
     ccmd  = strtok_r(pui->cmd, " \t\n\r", &saveptr);
 
     // Get the command. 
-    if (!strcmp(ccmd, "edset"))
+    if (!strcmp(ccmd, CPREFIX "set"))
         icmd = EDSET;
-    else if (!strcmp(ccmd, "edget"))
+    else if (!strcmp(ccmd, CPREFIX "get"))
         icmd = EDGET;
-    else if (!strcmp(ccmd, "edcat"))
+    else if (!strcmp(ccmd, CPREFIX "cat"))
         icmd = EDCAT;
-    else if (!strcmp(ccmd, "edlist"))
+    else if (!strcmp(ccmd, CPREFIX "list"))
         icmd = EDLIST;
-    else if (!strcmp(ccmd, "edloadso"))
+    else if (!strcmp(ccmd, CPREFIX "loadso"))
         icmd = EDLOAD;
     else {
         // Report bogus command
@@ -134,9 +133,9 @@ void parse_and_execute(UI *pui)
                        prsc = &(Slots[islot].rsc[irsc]);
                        if (prsc->name != 0) {
                            len = snprintf(rply, MXRPLY, LISTRSCFMT, prsc->name,
-                               ((prsc->flags & IS_READABLE) ? "edget " : ""),
-                               ((prsc->flags & IS_WRITABLE) ? "edset " : ""),
-                               ((prsc->flags & CAN_BROADCAST) ? "edcat " : ""));
+                               ((prsc->flags & IS_READABLE) ? CPREFIX "get " : ""),
+                               ((prsc->flags & IS_WRITABLE) ? CPREFIX "set " : ""),
+                               ((prsc->flags & CAN_BROADCAST) ? CPREFIX "cat " : ""));
                            send_ui(rply, len, pui->cn);
                        }
                     }
@@ -173,7 +172,7 @@ void parse_and_execute(UI *pui)
             prompt(pui->cn);
             return;
         }
-        // Second argument to edlist is a plug-in name.  Try to load it
+        // Second argument to loadso is a plug-in name.  Try to load it
         islot  = add_so(cslot);
         if (islot >= 0) {
             initslot(&(Slots[islot]));   // run the initializer for the slot

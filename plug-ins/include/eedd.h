@@ -4,7 +4,7 @@
  * Description: This file contains the define's and data structures for use
  *              in the empty event-driven daemon.
  *
- * Copyright:   Copyright (C) 2015 by Bob Smith
+ * Copyright:   Copyright (C) 2019 by Demand Peripherals, Inc.
  *              All rights reserved.
  *
  * License:     This program is free software; you can redistribute it and/or

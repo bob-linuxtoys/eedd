@@ -3,7 +3,7 @@
  * 
  * Description: This is the entry point for the empty daemon
  * 
- * Copyright:   Copyright (C) 2015 by Bob Smith (bsmith@linuxtoys.org)
+ * Copyright:   Copyright (C) 2019 by Demand Peripherals, Inc.
  *              All rights reserved.
  *
  * License:     This program is free software; you can redistribute it and/or
@@ -101,8 +101,7 @@ int      RealtimeMode = 0; // use realtime extension
  *  - Main.c specific globals
  ***************************************************************************/
 char    *CmdName;      // How this program was invoked
-char    *eeddso = "eedd.so";
-const char *versionStr = "eedd Version 0.9.0, Copyright 2015 by Bob Smith";
+const char *versionStr = "eedd Version 0.9.0, Copyright 2019 by Demand Peripherals, Inc.";
 const char *usageStr = "usage: eedd [-ev[level]dfrVmsh]\n";
 const char *helpText = "\
 eedd [options] \n\
@@ -136,8 +135,10 @@ int main(int argc, char *argv[])
     // Initialize globals for slots, timers, ui connections, and select fds
     globalinit();
 
-    // Add eedd.so first so it takes slot 0
-    (void) add_so(eeddso);
+    // Add plug-ins here to always have them when the program starts
+    // The first loaded is in slot 0, the next in slot 1, ...
+    //(void) add_so(eedd.so);      // slot 0
+    //(void) add_so(gamepad.so);   // slot 1
 
     // Parse the command line and set global flags 
     processcmdline(argc, argv);
