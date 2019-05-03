@@ -1,12 +1,11 @@
 /*
- * Name: edcli.c
+ * Name: cli.c
  *
  * Description: A utility that issues commands to the empty daemon using
  *              the command and parameters specified on the command line.
- *              This utility obliviates the need to 'telnet localhost 8870'
- *              to test plug-ins.
+ *              This utility makes it easier to test your plug-ins.
  *
- * Copyright:   Copyright (C) 2015 by Bob Smith (bsmith@linuxtoys.org)
+ * Copyright:   Copyright (C) 20119 by Demand Peripherals, Inc.
  *              All rights reserved.
  *
  * License:     This program is free software; you can redistribute it and/or
@@ -61,7 +60,7 @@ char helplist[];
 
 
 /**************************************************************
- * edcli(): - Send commands to an empty daemon.  This program lets
+ * cli(): - Send commands to an empty daemon.  This program lets
  *           you control your application from the command line.
  *
  * Input:        argc, argv
@@ -85,18 +84,19 @@ int main(int argc, char **argv)
 
     // Set default config.  Change default behavior here.
     strncpy(bindaddress, "127.0.0.1", MAX_IP-1);
-    bindport = 8870;
+    bindport = DEF_UIPORT;
 
 
     // Do a sanity check.  Must be invoked as one of the ed commands
-    if (strcmp(argv[0], "edget") &&
-        strcmp(argv[0], "edset") &&
-        strcmp(argv[0], "edcat") &&
-        strcmp(argv[0], "edlist") &&
-        strcmp(argv[0], "edloadso")) {
+    if (strcmp(argv[0], CPREFIX "get") &&
+        strcmp(argv[0], CPREFIX "set") &&
+        strcmp(argv[0], CPREFIX "cat") &&
+        strcmp(argv[0], CPREFIX "list") &&
+        strcmp(argv[0], CPREFIX "loadso")) {
         // Unrecognized command
         printf("Unrecognized command '%s'.  Commands must be one of\n", argv[0]);
-        printf(" edget, edset, edcat, edlist, or edloadso\n");
+        printf(" %sget, %sset, %scat, %slist, or %sloadso\n",
+               CPREFIX, CPREFIX, CPREFIX, CPREFIX, CPREFIX);
         exit(-1);
     }
 
@@ -210,19 +210,18 @@ void usage()
  **************************************************************/
 void help(char **argv)
 {
-    char *phelp  = usagetext;   // default help is just usage
-
     // print help based on how/which command was invoked
-    if (!strcmp("edlist", argv[0]))
-        phelp = helplist;
-    else if (!strcmp("edset", argv[0]))
-        phelp = helpset;
-    else if (!strcmp("edget", argv[0]))
-        phelp = helpget;
-    else if (!strcmp("edcat", argv[0]))
-        phelp = helpcat;
+    if (!strcmp(CPREFIX "list", argv[0]))
+        printf(helplist, CPREFIX, CPREFIX, CPREFIX);
+    else if (!strcmp(CPREFIX "set", argv[0]))
+        printf(helpset, CPREFIX, CPREFIX);
+    else if (!strcmp(CPREFIX "get", argv[0]))
+        printf(helpget, CPREFIX, CPREFIX, CPREFIX, CPREFIX);
+    else if (!strcmp(CPREFIX "cat", argv[0]))
+        printf(helpcat, CPREFIX, CPREFIX, CPREFIX, CPREFIX);
+    else
+        printf(usagetext, CPREFIX, CPREFIX, CPREFIX, CPREFIX);
 
-    printf("%s", phelp);
 
     return;
 }
@@ -232,68 +231,66 @@ void help(char **argv)
  * help text
  **************************************************************/
 char helplist[] = "\n\
-The edlist command prints a list of every plug-in in\n\
+The %slist command prints a list of every plug-in in\n\
 every slot in the system.  The output shows the plug-in\n\
 slot number, the name of the plug-in, and a one line\n\
 description of the plug-in.  Below the description of\n\
 each plug-in is a list of its resources and which commands\n\
 work with those resources.  Request more information about a\n\
-particular plug-in by entering edlist followed by the name\n\
-of the plug-in.  For example:\n\
-  edlist hellodemo\n\
+particular plug-in by entering the %slist command followed\n\
+by the name of the plug-in.  For example:\n\
+  %slist hellodemo\n\
 \n";
 
 char helpget[] = "\n\
-The edget command retrieves the value of a resource from a\n\
+The %sget command retrieves the value of a resource from a\n\
 plug-in.  Required parameters include the slot number (or\n\
 plug-in name), and the name of the resource.  The return\n\
 value is an ASCII string terminated by a newline.  The format\n\
 of the data in the string depends on the resource being queried.\n\
-For example, the following commands both get the value of the\n\
-buttons on the Baseboard\n\
-    edget hellodemo period\n\
-    edget 1 period\n\
+For example, the following commands show the configuration of\n\
+the hellodeamo plug-in\n\
+    %sget hellodemo period\n\
+    %sget 1 period\n\
 \n";
 
 char helpset[] = "\n\
-The edset command writes a new value into a resource of a\n\
+The %sset command writes a new value into a resource of a\n\
 plug-in.  Required parameters include the slot number (or\n\
 plug-in name), the name of the resource, and the new value\n\
-of the resource.  The new value is an ASCII string, the format of\n\
-which depends on the resource being changed.  Use edlist to get\n\
-a list of the plug-in and resources available.  For example,\n\
-the following commands both set the value of the eight LEDs on\n\
-the Baseboard\n\
-    edset hellodemo period 5\n\
+of the resource.  The new value is an ASCII string, the format\n\
+of which depends on the resource being changed.  For example,\n\
+the following command sets the period of the hellodemo to 5\n\
+seconds.\n\
+    %sset hellodemo period 5\n\
 \n";
 
 char helpcat[] = "\n\
-The edcat command connects to a stream of sensor or input device\n\
+The %scat command connects to a stream of sensor or input device\n\
 readings from a resource.  Required parameters include the slot\n\
 number (or plug-in name) and the name of the resource.  Once a\n\
-edcat command is issued the process remains running until explicitly\n\
+cat command is issued the process remains running until explicitly\n\
 killed.  Not all sensors or input resources can broadcast readings\n\
-(look for edcat in the edlist output),  and the edcat output format\n\
-is dependent on the type of resource.  Use 'edlist <pluginname>'\n\
-to see the data format for the resource output for a given plug-in.\n\
-The underlying mechanism for edcat is a TCP connection to the empty daemon.\n\
-The most common use of edcat at the empty daemon protocol level is to\n\
-combine it with select() to form an event driven system.  You may wish\n\
-to use edcat with all of the inputs and sensors in your system.  The\n\
-buttons on the Baseboard can be used with edcat.  The command is\n\
-    edcat hellodemo message\n\
+and the cat output format is dependent on the type of resource.\n\
+Use '%slist <pluginname>' to see the data format for the resource.\n\
+The underlying mechanism for cat is a TCP connection to the daemon.\n\
+The most common use of cat in a program is to combine it with select()\n\
+to form an event driven system.  You may wish to use %scat with all of\n\
+the inputs and sensors in your system.  The period printing of the\n\
+hellodemo output string can be started with:\n\
+    %scat hellodemo message\n\
 \n";
 
 char usagetext[] = "\
 Usage is command specific.  Empty daemon command syntaxes are as follows:\n\
-  edset <slot#|plug-in_name> <resourcename> <value(s)>\n\
-  edget <slot#|plug-in_name> <resourcename>\n\
-  edcat <slot#|plug-in_name> <resourcename>\n\
-  edlist [plug-in_name]\n\
+  %sset <slot#|plug-in_name> <resourcename> <value(s)>\n\
+  %sget <slot#|plug-in_name> <resourcename>\n\
+  %scat <slot#|plug-in_name> <resourcename>\n\
+  %slist [plug-in_name]\n\
 \n\
  options:\n\
- -p,        Specify TCP port of empty daemon.\n\
- -a,        Specify TCP address of empty daemon.  Default is 127.0.0.1\n\
- -h,        Print full help for the given empty daemon command.\n\
+ -p,        Specify TCP port of daemon.\n\
+ -a,        Specify TCP address of daemon.  Default is 127.0.0.1\n\
+ -h,        Print full help for the given command.\n\
 ";
 
