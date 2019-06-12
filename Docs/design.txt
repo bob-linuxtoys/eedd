@@ -141,7 +141,7 @@ SLOT data structure has the following fields:
 - char    *help;           // Full text of help for plug-in
 - char    *soname;         // shared object file name
 - void    *handle;         // dlopen() handle for soname
-- void    *tran;           // Pointer to plug-in's transparent data
+- void    *priv;           // Pointer to plug-in's private data
 - RSC      rsc[NUM_RSC];   // Resources visible on this slot
    There are a few fields in SLOT worth mentioning.  The soname comes
 from either the command line (-s option) or a edloadso command.

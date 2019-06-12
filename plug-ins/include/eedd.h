@@ -71,7 +71,7 @@ typedef struct {
     char     *desc;            // Very brief description of plug-in
     char     *help;            // Full text of help for plug-in
     void     *handle;          // dlopen() handle for soname
-    void     *trans;           // Pointer to plug-in's transparent data
+    void     *priv;            // Pointer to plug-in's private data
     char      soname[MX_SONAME];// shared object file name
     RSC       rsc[MX_RSC];     // Resources visible to this slot
 } SLOT;
@@ -117,7 +117,7 @@ void edlog(
  * specified number of milliseconds.  The callback must have two
  * input parameters.  The first is a pointer to a timer handle and
  * the second is a void pointer.  When called, the callback gets
- * the handle of the invoking timer as well as the transparent
+ * the handle of the invoking timer as well as the private
  * void pointer that was registered with the callback.
  ***************************************************************************/
 void        *add_timer(

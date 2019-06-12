@@ -126,7 +126,7 @@ int Initialize(
 
     // Register name and private data
     pslot->name = PLUGIN_NAME;
-    pslot->trans = pctx;
+    pslot->priv = pctx;
     pslot->desc = "Gamepad interface";
     pslot->help = README;
 
@@ -183,7 +183,7 @@ void usercmd(
     int      ret;      // return count
     int      nperiod;  // new value to assign the period
 
-    pctx = (GAMEPAD *) pslot->trans;
+    pctx = (GAMEPAD *) pslot->priv;
 
     if ((cmd == EDGET) && (rscid == RSC_PERIOD)) {
         ret = snprintf(buf, *plen, "%d\n", pctx->period);

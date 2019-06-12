@@ -182,7 +182,7 @@ void globalinit()
         Slots[i].name    = (char *) NULL; // functional name of plug-in
         Slots[i].soname[0] = (char) 0;    // so file name
         Slots[i].handle  = (void *) NULL;
-        Slots[i].trans   = (void *) NULL;
+        Slots[i].priv    = (void *) NULL;
         Slots[i].desc    = (void *) NULL;
         Slots[i].help    = (void *) NULL;
         for (j = 0; j < MX_RSC; j++) {

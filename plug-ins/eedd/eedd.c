@@ -80,7 +80,7 @@ int Initialize(
 
     // Register name and private data
     pslot->name = PLUGIN_NAME;
-    pslot->trans = pctx;
+    pslot->priv = pctx;
     pslot->desc = "Daemon status and configuration";
     pslot->help = README;
 

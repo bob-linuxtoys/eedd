@@ -95,7 +95,7 @@ int Initialize(
 
     // Register name and private data
     pslot->name = PLUGIN_NAME;
-    pslot->trans = pctx;
+    pslot->priv = pctx;
     pslot->desc = "Hello,World Demo Plug-in";
     pslot->help = README;
     // Add handlers for the user visible resources
@@ -144,7 +144,7 @@ void usercmd(
     int      ret;      // return count
     int      nperiod;  // new value to assign the period
 
-    pctx = (HELLODEMO *) pslot->trans;
+    pctx = (HELLODEMO *) pslot->priv;
 
     if ((cmd == EDGET) && (rscid == RSC_PERIOD)) {
         ret = snprintf(buf, *plen, "%d\n", pctx->period);
