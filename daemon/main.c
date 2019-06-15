@@ -139,11 +139,10 @@ int main(int argc, char *argv[])
     // The first loaded is in slot 0, the next in slot 1, ...
     (void) add_so("serial_fpga.so");         // slot 0
     (void) add_so("hba_basicio.so");         // slot 1
-    (void) add_so("hba_qtr.so");             // slot 2
-    (void) add_so("hba_motor.so");           // slot 3
-    (void) add_so("hba_sonar.so");           // slot 4 
-    (void) add_so("hba_quad.so");            // slot 5 
-    (void) add_so("gamepad.so");             // slot 6 
+    (void) add_so("hba_gpio.so");            // slot 2
+    (void) add_so("hba_sonar.so");           // slot 3
+    (void) add_so("hba_pwm.so");             // slot 4
+    (void) add_so("hba_quadrature.so");      // slot 5
 
     // Parse the command line and set global flags 
     processcmdline(argc, argv);
