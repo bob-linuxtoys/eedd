@@ -18,13 +18,14 @@
 #
 
 # Define default command prefix and UI port
-CPREFIX ?= ed
+CPREFIX ?= hba
 DEF_UIPORT ?= 8870
 
 
 PREFIX ?= /usr/local
 INST_BIN_DIR = $(PREFIX)/bin
 INST_LIB_DIR = $(PREFIX)/lib/$(CPREFIX)-libs
+EE_DIR = $(CURDIR)
 UNAME_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 SO_FLAGS := -shared -Wl,-soname
 SO_EXT := so
@@ -40,11 +41,13 @@ all:
 	mkdir -p build/lib
 	mkdir -p build/obj
 	make CPREFIX=$(CPREFIX) DEF_UIPORT=$(DEF_UIPORT) -C plug-ins all
+	make CPREFIX=$(CPREFIX) DEF_UIPORT=$(DEF_UIPORT) EE_DIR=$(EE_DIR) -C ../peripherals plugins
 	make INST_LIB_DIR=$(INST_LIB_DIR) DEF_UIPORT=$(DEF_UIPORT) \
 		CPREFIX=$(CPREFIX) -C daemon all
 
 clean:
 	make -C plug-ins clean
+	make EE_DIR=$(EE_DIR) -C ../peripherals clean
 	make -C daemon clean
 	rm -rf build
 
@@ -53,11 +56,17 @@ install:
 	make INST_BIN_DIR=$(INST_BIN_DIR) INST_LIB_DIR=$(INST_LIB_DIR) \
 		CPREFIX=$(CPREFIX) DEF_UIPORT=$(DEF_UIPORT) -C plug-ins install
 	make INST_BIN_DIR=$(INST_BIN_DIR) INST_LIB_DIR=$(INST_LIB_DIR) \
+		CPREFIX=$(CPREFIX) DEF_UIPORT=$(DEF_UIPORT) EE_DIR=$(EE_DIR) \
+		 -C ../peripherals plugins-install
+	make INST_BIN_DIR=$(INST_BIN_DIR) INST_LIB_DIR=$(INST_LIB_DIR) \
 		CPREFIX=$(CPREFIX) DEF_UIPORT=$(DEF_UIPORT) -C daemon install
 
 uninstall:
 	make INST_BIN_DIR=$(INST_BIN_DIR) INST_LIB_DIR=$(INST_LIB_DIR) \
 		CPREFIX=$(CPREFIX) DEF_UIPORT=$(DEF_UIPORT) -C plug-ins uninstall
+	make INST_BIN_DIR=$(INST_BIN_DIR) INST_LIB_DIR=$(INST_LIB_DIR) \
+		CPREFIX=$(CPREFIX) DEF_UIPORT=$(DEF_UIPORT) EE_DIR=$(EE_DIR) \
+		-C ../peripherals plugins-uninstall
 	make INST_BIN_DIR=$(INST_BIN_DIR) INST_LIB_DIR=$(INST_LIB_DIR) \
 		CPREFIX=$(CPREFIX) DEF_UIPORT=$(DEF_UIPORT) -C daemon uninstall
 	rmdir $(INST_LIB_DIR)
