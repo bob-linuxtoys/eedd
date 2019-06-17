@@ -149,7 +149,7 @@ from either the command line (-s option) or a edloadso command.
 look up the location of the "Initialize" function which it then calls.
 Part of each plug-in's initialization sequence is to malloc a data
 structure for that instance of the plug-in.  The plug-in fills in its
-data structure and places a pointer to it in the tran field of its
+data structure and places a pointer to it in the priv field of its
 SLOT structure.
    Each plug-in has a set of resources associated with it.  Part of
 the plug-in's initialization sequence is to fill in the RSC data
