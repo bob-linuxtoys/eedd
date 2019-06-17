@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 
     // Ignore the SIGPIPE signal since that can occur if a
     // UI socket closes just before we try to write to it.
-    (void) sigaction(SIGPIPE, (const struct sigaction *) 0, (struct sigaction *) 0);
+    (void) signal(SIGPIPE, SIG_IGN);
 
     // Initialize globals for slots, timers, ui connections, and select fds
     globalinit();
