@@ -15,15 +15,6 @@ use.  Changing this causes the old device to be closed
 and the new one opened.  The default value of 'device'
 is /dev/input/js1.
 
-period : A read-write resource that sets the period in
-milliseconds between updates to 'state'.  Any integer
-value greater than or equal to zero is accepted but is
-rounded off to the next highest 10 milliseconds. If the
-period is zero a new state is broadcast when a new event
-arrives.  If non-zero the state is broadcast every 
-'period' milliseconds whether or not new events have
-arrived.
-
 events : A broadcast resource that outputs gamepad events
 as they arrive.  This can be useful for debugging or if
 you want to watch for one specific event.  The output of
@@ -36,7 +27,36 @@ For example, pressing the 'Start' button on the gamepad
 would generate an event similar to this:
     80114284 B 7 1
 
-state : A broadcast resource that outputs the entire
+filter : A hex value that specifies which values to
+display as part of 'state'.  A set bit filters out
+that gamepad control.  The bits in the hex value have
+the following meaning:
+   000001 : 
+   000002 : 
+   000004 : 
+   000008 : 
+   000010 : 
+   000020 : 
+   000040 : 
+   000080 : 
+   000100 : 
+   000200 : 
+   000400 : 
+   000800 : 
+   001000 : 
+   002000 : 
+   004000 : 
+   008000 : 
+   010000 : 
+   020000 : 
+   040000 : 
+   080000 : 
+   100000 : 
+   200000 : 
+   400000 : 
+   800000 : 
+
+state : A broadcast resource that outputs the filtered
 state of the gamepad every 'period' millisecond (or on
 state change if period is zero).  The state has up to
 eight axis values and sixteen button events.  The form
@@ -47,4 +67,13 @@ buttons, and the axis value are signed decimal value
 show the state of the axis.  The timestamp is for the
 last event reported.  If the timestamp is not changing
 it is because there are no new events.
+
+period : A read-write resource that sets the period in
+milliseconds between updates to 'state'.  Any integer
+value greater than or equal to zero is accepted but is
+rounded off to the next highest 10 milliseconds. If the
+period is zero a new state is broadcast when a new event
+arrives.  If non-zero the state is broadcast every 
+'period' milliseconds whether or not new events have
+arrived.
 

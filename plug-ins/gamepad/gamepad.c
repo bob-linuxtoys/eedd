@@ -7,6 +7,7 @@
  *    device -  full path to Linux device for the gamepad (/dev/input/js1)
  *    period -  update interval in milliseconds
  *    events -  broadcast for events as they arrive
+ *    filter -  disable selected output values
  *    state -   broadcast of total state of gamepad
  */
 
@@ -45,11 +46,13 @@
 #define FN_DEVICE          "device"
 #define FN_PERIOD          "period"
 #define FN_EVENTS          "events"
+#define FN_FILTER          "filter"
 #define FN_STATE           "state"
 #define RSC_DEVICE         0
 #define RSC_PERIOD         1
 #define RSC_EVENTS         2
-#define RSC_STATE          3
+#define RSC_FILTER         3
+#define RSC_STATE          4
         // What we are is a ...
 #define PLUGIN_NAME        "gamepad"
         // Default gamepad device
@@ -78,6 +81,7 @@ typedef struct
     int      indx;     // index into gpevnt on partial reads
     int      axs[NAXIS];  // current state of axis controls
     int      buttons;  // current state of the buttons
+    int      filter;   // filter out event if bit is set
     int      ts;       // timerstame of most recent event
 } GAMEPAD;
 
@@ -111,6 +115,7 @@ int Initialize(
     // Init our GAMEPAD structure
     pctx->pslot = pslot;       // this instance of the hello demo
     pctx->period = 0;          // default state update on event
+    pctx->filter = 0;          // default is to report all controls
     pctx->indx = 0;            // no bytes in gamepad event structure yet
     (void) strncpy(pctx->device, DEFDEV, PATH_MAX);
     // now open and register the gamepad device
@@ -136,19 +141,25 @@ int Initialize(
     pslot->rsc[RSC_PERIOD].bkey = 0;
     pslot->rsc[RSC_PERIOD].pgscb = usercmd;
     pslot->rsc[RSC_PERIOD].uilock = -1;
+    pslot->rsc[RSC_PERIOD].slot = pslot;
     pslot->rsc[RSC_DEVICE].slot = pslot;
     pslot->rsc[RSC_DEVICE].name = FN_DEVICE;
     pslot->rsc[RSC_DEVICE].flags = IS_READABLE | IS_WRITABLE;
     pslot->rsc[RSC_DEVICE].bkey = 0;
     pslot->rsc[RSC_DEVICE].pgscb = usercmd;
     pslot->rsc[RSC_DEVICE].uilock = -1;
-    pslot->rsc[RSC_PERIOD].slot = pslot;
     pslot->rsc[RSC_EVENTS].name = FN_EVENTS;
     pslot->rsc[RSC_EVENTS].flags = CAN_BROADCAST;
     pslot->rsc[RSC_EVENTS].bkey = 0;
     pslot->rsc[RSC_EVENTS].pgscb = 0;
     pslot->rsc[RSC_EVENTS].uilock = -1;
     pslot->rsc[RSC_EVENTS].slot = pslot;
+    pslot->rsc[RSC_FILTER].name = FN_FILTER;
+    pslot->rsc[RSC_FILTER].flags = IS_READABLE | IS_WRITABLE;
+    pslot->rsc[RSC_FILTER].bkey = 0;
+    pslot->rsc[RSC_FILTER].pgscb = usercmd;
+    pslot->rsc[RSC_FILTER].uilock = -1;
+    pslot->rsc[RSC_FILTER].slot = pslot;
     pslot->rsc[RSC_STATE].name = FN_STATE;
     pslot->rsc[RSC_STATE].flags = CAN_BROADCAST;
     pslot->rsc[RSC_STATE].bkey = 0;
@@ -181,12 +192,18 @@ void usercmd(
 {
     GAMEPAD *pctx;   // our local info
     int      ret;      // return count
-    int      nperiod;  // new value to assign the period
+    int      nperiod;  // new value to assign to the period
+    int      nfilter;  // new value to assign to the filter
+
 
     pctx = (GAMEPAD *) pslot->priv;
 
     if ((cmd == EDGET) && (rscid == RSC_PERIOD)) {
         ret = snprintf(buf, *plen, "%d\n", pctx->period);
+        *plen = ret;  // (errors are handled in calling routine)
+    }
+    else if ((cmd == EDGET) && (rscid == RSC_FILTER)) {
+        ret = snprintf(buf, *plen, "%05x\n", pctx->filter);
         *plen = ret;  // (errors are handled in calling routine)
     }
     else if ((cmd == EDGET) && (rscid == RSC_DEVICE)) {
@@ -209,6 +226,15 @@ void usercmd(
         if (pctx->period != 0) {
             pctx->ptimer = add_timer(ED_PERIODIC, pctx->period, sendstate, (void *) pctx);
         }
+    }
+    else if ((cmd == EDSET) && (rscid == RSC_FILTER)) {
+        ret = sscanf(val, "%x", &nfilter);
+        if ((ret != 1) || (nfilter > (1 << 24))) {
+            ret = snprintf(buf, *plen, E_BDVAL, pslot->rsc[rscid].name);
+            return;
+        }
+        // record the new filter
+        pctx->filter = nfilter;
     }
     else if ((cmd == EDSET) && (rscid == RSC_DEVICE)) {
         // Val has the new device path.  Just copy it.
@@ -247,6 +273,7 @@ static void getevents(
     int       slen;          // length of text to output
     struct js_event *jsevt;  // to cast gpevt to type struct js_event
     int       mask;          // bit shift variable
+    int       bcststate = 0; // broadcast state when set
 
 
     pctx = (GAMEPAD *) cb_data;
@@ -291,28 +318,37 @@ static void getevents(
         bcst_ui(msg, slen, &(prsc->bkey));
     }
 
-    // Update the state info
+    // Update the state info if not filtered
     pctx->ts = jsevt->time;
-    if ((jsevt->type == JS_EVENT_AXIS) && (jsevt->number < NAXIS)) {
+    if ((jsevt->type == JS_EVENT_AXIS) && (jsevt->number < NAXIS) &&
+        (((1 << (jsevt->number + NBNTN)) & pctx->filter) == 0)) {
         pctx->axs[jsevt->number] = jsevt->value;
+        bcststate = 1;
     }
-    else if ((jsevt->type == JS_EVENT_BUTTON) && (jsevt->number < NBNTN)) {
+    else {
         mask = 1 << jsevt->number;
-        if (jsevt->value == 0)
-            pctx->buttons = pctx->buttons & ~mask;
-        else
-            pctx->buttons = pctx->buttons | mask; 
+        if ((jsevt->type == JS_EVENT_BUTTON) && (jsevt->number < NBNTN) &&
+            ((mask & pctx->filter) != 0)) {
+            if (jsevt->value == 0)
+                pctx->buttons = pctx->buttons & ~mask;
+            else
+                pctx->buttons = pctx->buttons | mask; 
+            bcststate = 1;
+        }
     }
 
-    // New state is recorded.  Use sendstate() to broadcast it if needed
-    sendstate((void *) 0, pctx);
+    // New state is recorded.  Use sendstate() to broadcast it if needed.
+    // Don't broadcast state if event is being filtered.
+    if (bcststate) {
+        sendstate((void *) 0, pctx);
+    }
 
     return;
 }
 
 
 /**************************************************************
- * sendstate():  Send message to broadcast node
+ * sendstate():  Send filtered state to broadcast node
  **************************************************************/
 void sendstate(
     void     *timer,   // handle of the timer that expired
@@ -322,6 +358,7 @@ void sendstate(
     RSC      *prsc;    // pointer to this slot's counts resource
     char      msg[MX_MSGLEN+1]; // message to send.  +1 for newline
     int       slen;    // length of string to output
+    int       i;       // loop counter for axis
 
     pslot = pctx->pslot;
     prsc = &(pslot->rsc[RSC_STATE]);  // message resource
@@ -330,10 +367,22 @@ void sendstate(
         return;
     }
 
-    // write message into a string
-    slen = snprintf(msg, (MX_MSGLEN +1), "%10d %04x %d %d %d %d %d %d %d %d\n",
-           pctx->ts, pctx->buttons, pctx->axs[0], pctx->axs[1], pctx->axs[2],
-           pctx->axs[3], pctx->axs[4], pctx->axs[5], pctx->axs[6], pctx->axs[7]);
+    // Write message into a string starting with a timestamp
+    slen = snprintf(msg, (MX_MSGLEN +1), "%10d", pctx->ts);
+
+    // Print button values if any button is being monitored.  
+    // Buttons are the low 16 bits of the filter (0x00FFFF)
+    if ((pctx->filter & 0x00ffff) != 0x00ffff) {   // all filtered?
+        slen += snprintf(&(msg[slen]), (MX_MSGLEN +1 -slen), " %04x", pctx->buttons);
+    }
+
+    for (i = 0; i < NAXIS; i++) {
+        if (((1 << (i + NBNTN)) & pctx->filter) == 0) {
+            slen += snprintf(&(msg[slen]), (MX_MSGLEN +1 -slen), " %d", pctx->axs[i]);
+        }
+    }
+
+    slen += snprintf(&(msg[slen]), (MX_MSGLEN +1 -slen), "\n");
 
     // bkey will return cleared if UIs are no longer monitoring us
     bcst_ui(msg, slen, &(prsc->bkey));
