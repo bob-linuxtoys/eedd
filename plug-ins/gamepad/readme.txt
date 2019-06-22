@@ -77,3 +77,10 @@ arrives.  If non-zero the state is broadcast every
 'period' milliseconds whether or not new events have
 arrived.
 
+EXAMPLE
+  Display the right vertical joystick value and the top
+left button.  Display on value change only (no periodic
+updates).
+   hbaset gamepad filter efffef
+   hbaset gamepad period 0 
+   hbacat gamepad state
