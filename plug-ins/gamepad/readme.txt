@@ -31,36 +31,36 @@ filter : A hex value that specifies which values to
 display as part of 'state'.  A set bit filters out
 that gamepad control.  The bits in the hex value have
 the following meaning:
-   000001 : 
-   000002 : 
-   000004 : 
-   000008 : 
-   000010 : 
-   000020 : 
-   000040 : 
-   000080 : 
-   000100 : 
-   000200 : 
-   000400 : 
-   000800 : 
-   001000 : 
-   002000 : 
-   004000 : 
-   008000 : 
-   010000 : 
-   020000 : 
-   040000 : 
-   080000 : 
-   100000 : 
-   200000 : 
-   400000 : 
-   800000 : 
+   000001 : 'A' button
+   000002 : 'B' button
+   000004 : 'X' button
+   000008 : 'Y' button
+   000010 : Left top button
+   000020 : Right top button
+   000040 : Left center button
+   000080 : Right center button
+   000100 : Top center button
+   000200 :    (unused)
+   000400 :    (unused)
+   000800 :    (unused)
+   001000 :    (unused)
+   002000 :    (unused)
+   004000 :    (unused)
+   008000 :    (unused)
+   010000 : Left horizontal joystick
+   020000 : Left vertical joystick
+   040000 : Left trigger
+   080000 : Right horizontal joystick
+   100000 : Right vertical joystick
+   200000 : Right trigger
+   400000 : Horizontal hat switch
+   800000 : Vertical hat switch
 
 state : A broadcast resource that outputs the filtered
 state of the gamepad every 'period' millisecond (or on
 state change if period is zero).  The state has up to
 eight axis values and sixteen button events.  The form
-of the output is:
+of the output with all controls unfiltered is:
     timestamp buttons ax1 ax2 ax3 ax4 ax5 ax6 ax7 ax8
 where 'buttons' is the hex value of the state of all
 buttons, and the axis value are signed decimal value
