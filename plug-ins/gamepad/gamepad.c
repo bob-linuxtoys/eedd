@@ -328,7 +328,7 @@ static void getevents(
     else {
         mask = 1 << jsevt->number;
         if ((jsevt->type == JS_EVENT_BUTTON) && (jsevt->number < NBNTN) &&
-            ((mask & pctx->filter) != 0)) {
+            ((mask & pctx->filter) == 0)) {
             if (jsevt->value == 0)
                 pctx->buttons = pctx->buttons & ~mask;
             else
