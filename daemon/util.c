@@ -41,6 +41,7 @@ int      fdcount;      // Number open file descriptors
 int      mxfd;         // Highest numbered FD
 fd_set   gRfds;        // read FDs
 fd_set   gWfds;        // write FDs
+fd_set   gXfds;        // exception FDs
 int      ntimers = 0;  // number of timers in use
 
 
@@ -67,8 +68,10 @@ void muxmain()
     struct timeval *ptv;
     fd_set   readset;
     fd_set   writeset;
+    fd_set   exceptset;
     ED_FD   *pin;
     int      sret;     // return value from select();
+    int      activity; // type of select activity (read,write,except)
     int      i;
 
     update_fdsets();
@@ -77,6 +80,7 @@ void muxmain()
         // init the local fd sets from the global ones
         memcpy(&readset, &gRfds, sizeof(fd_set));
         memcpy(&writeset, &gWfds, sizeof(fd_set));
+        memcpy(&exceptset, &gXfds, sizeof(fd_set));
 
         // Process timers
         ptv = doTimer();
@@ -92,16 +96,24 @@ void muxmain()
             }
         }
 
-        // Walk the table of FDs doing read and write as required
+        // Walk the table of FDs looking for read,write,except activity
         for (i = 0; i < MX_FD; i++) {
             pin = &Ed_Fd[i];
-            if ((pin->fd >= 0) &&
-                FD_ISSET(pin->fd, &readset) && pin->rcb) {
-                pin->rcb(pin->fd, pin->pcb_data, 0);
+            if (pin < 0) {
+                continue;
             }
-            if ((pin->fd >= 0) &&
-                FD_ISSET(pin->fd, &writeset) && pin->wcb) {
-                pin->wcb(pin->fd, pin->pcb_data, 1);
+            activity = 0;
+            if (FD_ISSET(pin->fd, &readset)) {
+                activity = ED_READ;
+            }
+            if (FD_ISSET(pin->fd, &writeset)) {
+                activity |= ED_WRITE;
+            }
+            if (FD_ISSET(pin->fd, &exceptset)) {
+                activity |= ED_EXCEPT;
+            }
+            if ((activity != 0) && (pin->scb != NULL)) {
+                pin->scb(pin->fd, pin->pcb_data, activity);
             }
         }
     }
@@ -113,15 +125,15 @@ void muxmain()
  ***************************************************************************/
 void add_fd(
     int      fd,        // FD to add
-    void     (*rcb) (), // read callback
-    void     (*wcb) (), // write callback
+    int      stype,     // type of activity to watch for
+    void     (*scb) (), // activity callback
     void    *pcb_data)  // callback data 
 {
     ED_FD   *pinfo = 0;
     int      i;         // loop counter
 
     // Sanity check: fd must be positive and callback must be defined
-    if (((rcb == NULL) && (wcb == NULL)) || (fd <= 0)) {
+    if ((scb == NULL) || (fd <= 0)) {
         // LOG(LOG_WARNING, SL, E_Bad_FD);
         return;
     }
@@ -139,12 +151,12 @@ void add_fd(
     }
 
     // At this point we've walked the ED_FD array and have
-    // found an empty ED_FD.  Now add the new entry.
-    pinfo->rcb = rcb;
-    pinfo->wcb = wcb;
+    // found an empty ED_FD.  Add the new entry.
+    pinfo->fd = fd;
+    pinfo->stype = stype;
+    pinfo->scb = scb;
     pinfo->pcb_data = pcb_data;
-    if (pinfo->fd == -1)        // add or update?
-        pinfo->fd = fd;
+
     update_fdsets();
 }
 
@@ -179,6 +191,7 @@ void update_fdsets()
 
     FD_ZERO(&gRfds);
     FD_ZERO(&gWfds);
+    FD_ZERO(&gXfds);
     fdcount = 0;
     mxfd = -1;
 
@@ -188,10 +201,12 @@ void update_fdsets()
 
         fdcount++;
         mxfd = (Ed_Fd[i].fd > mxfd) ? Ed_Fd[i].fd : mxfd;
-        if (Ed_Fd[i].rcb != NULL)
+        if ((Ed_Fd[i].stype & ED_READ) != 0)
             FD_SET(Ed_Fd[i].fd, &gRfds);
-        if (Ed_Fd[i].wcb != NULL)
+        if ((Ed_Fd[i].stype & ED_WRITE) != 0)
             FD_SET(Ed_Fd[i].fd, &gWfds);
+        if ((Ed_Fd[i].stype & ED_EXCEPT) != 0)
+            FD_SET(Ed_Fd[i].fd, &gXfds);
     }
     return;
 }

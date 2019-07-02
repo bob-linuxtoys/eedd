@@ -68,8 +68,8 @@ typedef struct {
     /* the information kept for each file descriptor callback */
 typedef struct {
     int       fd;              // FD of TCP conn (=-1 if not in use)
-    void      (*rcb) ();       // Callback on select() read activity
-    void      (*wcb) ();       // Callback on select() write activity
+    int       stype;           // OR of ED_ READ, WRITE, and EXCEPT
+    void      (*scb) ();       // Callback on select() activity
     void     *pcb_data;        // data included in call of callbacks
 } ED_FD;
 

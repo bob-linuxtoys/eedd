@@ -37,6 +37,11 @@
 #define EDLIST           4
 #define EDLOAD           5
 
+        // Different ways to register a fd for select
+#define ED_READ          1
+#define ED_WRITE         2
+#define ED_EXCEPT        4
+
         // Max size of a line from the UI's
 #define MXCMD     (2000)
         // Max size of a line to the UI's
@@ -94,8 +99,8 @@ const SLOT * getslotbyid(
  ***************************************************************************/
 void add_fd(
     int      fd,        // FD to add
-    void     (*rcb) (), // read callback
-    void     (*wcb) (), // write callback
+    int      stype,     // OR of ED_READ, ED_WRITE, ED_EXCEPT
+    void     (*scb) (), // select callback
     void    *pcb_data); // callback data 
 
 /***************************************************************************
