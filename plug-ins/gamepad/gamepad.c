@@ -121,7 +121,7 @@ int Initialize(
     // now open and register the gamepad device
     pctx->gpfd = open(pctx->device, (O_RDONLY | O_NONBLOCK));
     if (pctx->gpfd != -1) {
-        add_fd(pctx->gpfd, getevents, (void (*)()) NULL, (void *) pctx);
+        add_fd(pctx->gpfd, ED_READ, getevents, (void *) pctx);
     }
     pctx->ts = 0;
     pctx->buttons = 0;
@@ -250,7 +250,7 @@ void usercmd(
         // now open and register the new device
         pctx->gpfd = open(pctx->device, (O_RDONLY | O_NONBLOCK));
         if (pctx->gpfd != -1) {
-            add_fd(pctx->gpfd, getevents, (void (*)()) NULL, (void *) pctx);
+            add_fd(pctx->gpfd, ED_READ, getevents, (void *) pctx);
         }
     }
     return;

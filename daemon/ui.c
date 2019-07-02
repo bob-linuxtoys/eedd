@@ -565,7 +565,7 @@ void open_ui_conn(int srvfd, int cb_data)
     UiCons[i].bkey = 0;    // not watching inputs/sensors
 
     /* add the new UI conn to the read fd_set in the select loop */
-    add_fd(newuifd, receive_ui, (void (*)()) NULL, (void *) 0);
+    add_fd(newuifd, ED_READ, receive_ui, (void *) 0);
 
     return;
 }
@@ -628,7 +628,7 @@ void open_ui_port()
 
     /* If we get to here, then we were able to open the UI socket. Tell the
      * select loop about it. */
-    add_fd(srvfd, open_ui_conn, (void (*)()) NULL, (void *) 0);
+    add_fd(srvfd, ED_READ, open_ui_conn, (void *) 0);
 }
 
 /***************************************************************************

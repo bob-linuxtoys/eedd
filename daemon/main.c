@@ -197,8 +197,8 @@ void globalinit()
 
     for (i = 0; i < MX_FD; i++) {
         Ed_Fd[i].fd       = -1;
-        Ed_Fd[i].rcb      = NULL; // Callback on select() read activity
-        Ed_Fd[i].wcb      = NULL; // Callback on select() write activity
+        Ed_Fd[i].stype    = 0;    // read, write, or except
+        Ed_Fd[i].scb      = NULL; // callback on select() activity
         Ed_Fd[i].pcb_data = (void *) NULL; // data included in call of callback
     }
 
