@@ -4,7 +4,7 @@
  *  Description: Simple interface to a Linux gamepad device
  *
  *  Resources:
- *    device -  full path to Linux device for the gamepad (/dev/input/js1)
+ *    device -  full path to Linux device for the gamepad (/dev/input/js0)
  *    period -  update interval in milliseconds
  *    events -  broadcast for events as they arrive
  *    filter -  disable selected output values
@@ -56,7 +56,7 @@
         // What we are is a ...
 #define PLUGIN_NAME        "gamepad"
         // Default gamepad device
-#define DEFDEV             "/dev/input/js1"
+#define DEFDEV             "/dev/input/js0"
         // Maximum size of output string
 #define MX_MSGLEN          120
         // Gamepad event size
