@@ -142,7 +142,8 @@ int main(int argc, char *argv[])
     (void) add_so("hba_qtr.so");             // slot 2
     (void) add_so("hba_motor.so");           // slot 3
     (void) add_so("hba_sonar.so");           // slot 4 
-
+    (void) add_so("hba_quad.so");            // slot 5 
+    (void) add_so("gamepad.so");             // slot 6 
 
     // Parse the command line and set global flags 
     processcmdline(argc, argv);
