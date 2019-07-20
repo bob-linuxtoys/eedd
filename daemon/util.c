@@ -86,7 +86,7 @@ void muxmain()
         ptv = doTimer();
 
         // wait for FD activity
-        sret = select(mxfd + 1, &readset, &writeset, (fd_set *) 0, ptv);
+        sret = select(mxfd + 1, &readset, &writeset, &exceptset, ptv);
 
         if (sret < 0) {
             // select error -- bail out on all but EINTR
