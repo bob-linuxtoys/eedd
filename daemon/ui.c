@@ -421,8 +421,6 @@ void send_ui(
  * end of a UI connection.  Close the connection on error.
  * A prompt indicates the completion of the previous command.
  *
- * The PROMPT character is a colon and is defined directly
- * in the code below. 
  ***************************************************************************/
 void prompt(
     int      cn)          // index to UI conn table
