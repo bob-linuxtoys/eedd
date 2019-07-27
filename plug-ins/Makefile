@@ -17,22 +17,18 @@
 #
 
 all:
-	make -C eedd all
 	make -C hellodemo all
 	make -C gamepad all
 
 clean:
-	make -C eedd clean
 	make -C hellodemo clean
 	make -C gamepad clean
 
 install:
-	make INST_LIB_DIR=$(INST_LIB_DIR) -C eedd install
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C hellodemo install
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C gamepad install
 
 uninstall:
-	make INST_LIB_DIR=$(INST_LIB_DIR) -C eedd uninstall
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C hellodemo uninstall
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C gamepad uninstall
 
