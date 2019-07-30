@@ -50,7 +50,7 @@ int      ntimers = 0;  // number of timers in use
  ***************************************************************************/
 static void      update_fdsets(); // set fd_set before use by select()
 struct timeval  *doTimer();
-static unsigned long long tv2us(struct timeval *);
+static long long tv2us(struct timeval *);
 
 extern SLOT      Slots[];   // table of plug-in info
 extern ED_FD     Ed_Fd[];   // Array of open FDs and callbacks
@@ -91,7 +91,7 @@ void muxmain()
         if (sret < 0) {
             // select error -- bail out on all but EINTR
             if (errno != EINTR) {
-                // LOG(LOG_ERR, SL, E_Bad_Select, errno);
+                edlog(strerror(errno));
                 exit(-1);
             }
         }
@@ -264,7 +264,7 @@ void edlog(
  * 
  * void * add_timer(
  *       int type;             // one-shot or periodic
- *       unsigned int ms;      // milliseconds to timeout
+ *       int ms;               // milliseconds to timeout
  *       void *(*callback)();  // called at timeout
  *       void *cb_data)        // blindly passed to callback
  * 
@@ -306,8 +306,8 @@ void edlog(
 struct timeval *doTimer()
 {
     struct timeval tv;  // timeval struct to hold "now"
-    unsigned long long now;      // "now" in milliseconds since Epoch
-    unsigned long long nextto;   // Next timeout
+    long long now;      // "now" in milliseconds since Epoch
+    long long nextto;   // Next timeout
     int    i;           // loop counter
     int    count;       // how many timers we've checked
 
@@ -341,7 +341,7 @@ struct timeval *doTimer()
         // Found a timer in use
         count++;
 
-        // Expired?
+        // Ignore if not expired
         if (Timers[i].to > now)
             continue;
 
@@ -360,9 +360,11 @@ struct timeval *doTimer()
                 break;
             }
             else {
-                (Timers[i].cb) ((void *) &Timers[i], Timers[i].pcb_data); /* Do the callback */
-                Timers[i].type = ED_UNUSED;
-                ntimers--;
+                (Timers[i].cb) ((void *) &Timers[i], Timers[i].pcb_data); /* Do the callback */                // delete timer but first check if callback deleted it already
+                if (Timers[i].type != ED_UNUSED) {
+                    Timers[i].type = ED_UNUSED;
+                    ntimers--;
+                }
             }
         }
     }
@@ -372,6 +374,7 @@ struct timeval *doTimer()
        if there are no timers.  If there are timers then the
        select timeval is based on the next timer timeout value. */
 
+    // No timeout if no timers
     if (ntimers == 0) {
         return ((struct timeval *) 0);
     }
@@ -392,12 +395,18 @@ struct timeval *doTimer()
             nextto = Timers[i].to;
         }
     }
-    if ((nextto - now) < 0) {     // next timeout is in the past (CPU hog?)
+    // Return null if no timers are set
+    if (nextto == -1) {
+        // This indicates an internal error.  no timers but ntimers not zero
+        edlog("eedd internal timer error");
+        return ((struct timeval *) 0);
+    }
+    // Return 0 for an immediate timeout if we missed a timeoout
+    if ((nextto - now) < 0L) {     // next timeout is in the past (CPU hog?)
         nextto = now;
     }
     select_tv.tv_sec = (nextto - now) / 1000000;
     select_tv.tv_usec = (suseconds_t) ((nextto - now) % 1000000);
-
     return (&select_tv);
 }
 
@@ -416,7 +425,7 @@ struct timeval *doTimer()
  ***************************************************************************/
 void *add_timer(        // address of timer struct allocated
     int      type,      // oneshot or periodic
-    unsigned int ms,    // milliseconds to timeout
+    int      ms,        // milliseconds to timeout
     void     (*cb) (),  // timeout callback
     void    *pcb_data)  // callback data
 {
@@ -425,11 +434,11 @@ void *add_timer(        // address of timer struct allocated
 
     /* Sanity checks */
     if (cb == (void *) 0) {
-        printf("Adding timer with null callback\n");
+        edlog("Adding timer with null callback");
         return((void *) 0);
     }
     if (ms == 0 && type == ED_PERIODIC) {
-        printf("Periodic timer with period = 0\n");
+        edlog("Periodic timer with period = 0");
         return ((ED_TIMER *) 0);
     }
 
@@ -439,10 +448,9 @@ void *add_timer(        // address of timer struct allocated
             break;
     }
     if (i == MX_TIMER) {
-        printf("No free timers\n");
+        edlog("No free timers");
         return ((void *) 0);
     }
-    ntimers++;       /* increment number of ED_TIMER structs alloc'ed */
 
     /* Get "now" */
     if (gettimeofday(&tv, 0)) {
@@ -451,6 +459,7 @@ void *add_timer(        // address of timer struct allocated
     }
 
     /* OK, we've got the ED_TIMER struct, now fill it in */
+    ntimers++;       /* increment number of ED_TIMER structs alloc'ed */
     Timers[i].type = type;          /* one-shot or periodic */
     Timers[i].to = tv2us(&tv) + (ms * 1000); /* us from Epoch to timeout */
     Timers[i].us = ms * 1000;       /* period or interval in uS */
@@ -481,6 +490,7 @@ void del_timer(
     if (((ED_TIMER *) ptimer)->type == ED_UNUSED) {
         return;
     }
+
     ((ED_TIMER *) ptimer)->type = ED_UNUSED;
 
     ntimers--;
@@ -494,10 +504,10 @@ void del_timer(
  * Output:       long long
  * Effects:      No side effects
  ***************************************************************************/
-static unsigned long long tv2us(
+static long long tv2us(
     struct timeval *ptv)
 {
-    return ((((unsigned long long)ptv->tv_sec) * 1000000) + ptv->tv_usec);
+    return ((((long long)ptv->tv_sec) * 1000000) + ptv->tv_usec);
 }
 
 
