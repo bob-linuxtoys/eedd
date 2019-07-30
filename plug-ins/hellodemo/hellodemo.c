@@ -48,7 +48,7 @@
         // Maximum message length
 #define MX_MSGLEN          60
         // What we are is a ...
-#define PLUGIN_NAME        "hello_demo"
+#define PLUGIN_NAME        "hellodemo"
 
 
 /**************************************************************

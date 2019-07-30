@@ -127,7 +127,7 @@ void edlog(
  ***************************************************************************/
 void        *add_timer(
     int      type,     // oneshot or periodic
-    unsigned int ms,   // milliseconds to timeout
+    int      ms,       // milliseconds to timeout
     void   (*cb) (),   // timeout callback
     void    *pcb_data); // callback data
 
