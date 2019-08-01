@@ -19,18 +19,22 @@
 all:
 	make -C hellodemo all
 	make -C gamepad all
+	make -C irccom all
 
 clean:
 	make -C hellodemo clean
 	make -C gamepad clean
+	make -C irccom clean
 
 install:
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C hellodemo install
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C gamepad install
+	make INST_LIB_DIR=$(INST_LIB_DIR) -C irccom install
 
 uninstall:
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C hellodemo uninstall
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C gamepad uninstall
+	make INST_LIB_DIR=$(INST_LIB_DIR) -C irccom uninstall
 
 .PHONY : clean install uninstall
 
