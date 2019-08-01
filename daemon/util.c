@@ -360,11 +360,9 @@ struct timeval *doTimer()
                 break;
             }
             else {
-                (Timers[i].cb) ((void *) &Timers[i], Timers[i].pcb_data); /* Do the callback */                // delete timer but first check if callback deleted it already
-                if (Timers[i].type != ED_UNUSED) {
-                    Timers[i].type = ED_UNUSED;
-                    ntimers--;
-                }
+                Timers[i].type = ED_UNUSED;
+                ntimers--;
+                (Timers[i].cb) ((void *) &Timers[i], Timers[i].pcb_data); // Do callback 
             }
         }
     }
