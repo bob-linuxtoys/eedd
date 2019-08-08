@@ -21,6 +21,6 @@ period : A read-write resource that sets the period in
 seconds between updates to 'message'.  Any integer
 value greater than 0 is accepted.
 
-message : A broadcast resource that output 'messagetext'
+message : A broadcast resource that outputs 'messagetext'
 every 'period' seconds.
 

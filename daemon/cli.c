@@ -133,7 +133,7 @@ int main(int argc, char **argv)
     skt.sin_family = AF_INET;
     skt.sin_port = htons(bindport);
     if ((inet_aton(bindaddress, &(skt.sin_addr)) == 0) ||
-        ((srvfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) ||
+        ((srvfd = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC, 0)) < 0) ||
         (connect(srvfd, (struct sockaddr *) &skt, adrlen) < 0)) {
         printf("Error: unable to connect to the empty daemon.\n");
         exit(-1);
