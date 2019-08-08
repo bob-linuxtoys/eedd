@@ -31,7 +31,7 @@ the following to the /etc/ngircd/ngircd.conf:
 While editing the configuration file you should also change the
 message-of-the-day and the server name.  If you change ngircd's
 configuration file be sure to restart it with:
-  sudo pkill -i ngircd
+  sudo pkill -1 ngircd
 
 
 
@@ -71,13 +71,13 @@ available_channels
 use this resource to get a list of the channels available on the
 server.  There is one channel per line, and each line contains the
 channel name, a tab, and a brief description of the channel.
-This resources works with the get command.  Note that the '#'
+This resources works with the get command.  Note that the '&'
 that is prepended to the actual IRC channel names is removed from
 the list of channels.   This resource works with the get command.
 
 my_channels
    A space separate list of two channels to use.  Channels do not
-have the usual '#' prepended to them.  This makes this resource
+have the usual '&' prepended to them.  This makes this resource
 easier to use in shell scripts.  This resource works with the
 get and set commands.
 
