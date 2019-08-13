@@ -20,21 +20,29 @@ all:
 	make -C hellodemo all
 	make -C gamepad all
 	make -C irccom all
+	make -C tts all
+	make -C gps all
 
 clean:
 	make -C hellodemo clean
 	make -C gamepad clean
 	make -C irccom clean
+	make -C tts clean
+	make -C gps clean
 
 install:
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C hellodemo install
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C gamepad install
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C irccom install
+	make INST_LIB_DIR=$(INST_LIB_DIR) -C tts install
+	make INST_LIB_DIR=$(INST_LIB_DIR) -C gps install
 
 uninstall:
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C hellodemo uninstall
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C gamepad uninstall
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C irccom uninstall
+	make INST_LIB_DIR=$(INST_LIB_DIR) -C tts uninstall
+	make INST_LIB_DIR=$(INST_LIB_DIR) -C gps uninstall
 
 .PHONY : clean install uninstall
 

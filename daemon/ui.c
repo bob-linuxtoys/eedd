@@ -608,7 +608,7 @@ void open_ui_port()
     srvskt.sin_family = AF_INET;
     srvskt.sin_addr.s_addr = (UiaddrAny) ? htonl(INADDR_ANY) : htonl(INADDR_LOOPBACK);
     srvskt.sin_port = htons(UiPort);
-    if ((srvfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((srvfd = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC, 0)) < 0) {
         edlog(M_BADCONN, errno);
         return;
     }
