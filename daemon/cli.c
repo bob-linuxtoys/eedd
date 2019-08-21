@@ -5,7 +5,7 @@
  *              the command and parameters specified on the command line.
  *              This utility makes it easier to test your plug-ins.
  *
- * Copyright:   Copyright (C) 20119 by Demand Peripherals, Inc.
+ * Copyright:   Copyright (C) 2019 by Demand Peripherals, Inc.
  *              All rights reserved.
  *
  * License:     This program is free software; you can redistribute it and/or
@@ -54,6 +54,7 @@ char usagetext[];
 char helpget[];
 char helpset[];
 char helpcat[];
+char helploadso[];
 char helplist[];
 
 
@@ -199,7 +200,7 @@ int main(int argc, char **argv)
  **************************************************************/
 void usage()
 {
-    printf("%s", usagetext);
+    printf(usagetext, CPREFIX, CPREFIX, CPREFIX, CPREFIX, CPREFIX);
 
     return;
 }
@@ -219,6 +220,8 @@ void help(char **argv)
         printf(helpget, CPREFIX, CPREFIX, CPREFIX, CPREFIX);
     else if (!strcmp(CPREFIX "cat", argv[0]))
         printf(helpcat, CPREFIX, CPREFIX, CPREFIX, CPREFIX);
+    else if (!strcmp(CPREFIX "loadso", argv[0]))
+        printf(helploadso, CPREFIX, CPREFIX, CPREFIX);
     else
         printf(usagetext, CPREFIX, CPREFIX, CPREFIX, CPREFIX);
 
@@ -281,12 +284,23 @@ hellodemo output string can be started with:\n\
     %scat hellodemo message\n\
 \n";
 
+char helploadso[] = "\n\
+The %sloadso command loads a new peripheral into the daemon.  Usually\n\
+you can give just the name of the shared object file.  After loading\n\
+a plug-in you should be be able to see its resources with a %slist\n\
+command.  For example, the following command loads the game controller\n\
+plug-in.\n\
+    %sloadso gamepad.so\n\
+\n";
+
+
 char usagetext[] = "\
 Usage is command specific.  Empty daemon command syntaxes are as follows:\n\
   %sset <slot#|plug-in_name> <resourcename> <value(s)>\n\
   %sget <slot#|plug-in_name> <resourcename>\n\
   %scat <slot#|plug-in_name> <resourcename>\n\
   %slist [plug-in_name]\n\
+  %sloadso <plug-in_name>.so\n\
 \n\
  options:\n\
  -p,        Specify TCP port of daemon.\n\
