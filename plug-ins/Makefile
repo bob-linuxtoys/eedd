@@ -22,6 +22,7 @@ all:
 	make -C irccom all
 	make -C tts all
 	make -C gps all
+	make -C vl53 all
 
 clean:
 	make -C hellodemo clean
@@ -29,6 +30,7 @@ clean:
 	make -C irccom clean
 	make -C tts clean
 	make -C gps clean
+	make -C vl53 clean
 
 install:
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C hellodemo install
@@ -36,6 +38,7 @@ install:
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C irccom install
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C tts install
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C gps install
+	make INST_LIB_DIR=$(INST_LIB_DIR) -C vl53 install
 
 uninstall:
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C hellodemo uninstall
@@ -43,6 +46,7 @@ uninstall:
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C irccom uninstall
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C tts uninstall
 	make INST_LIB_DIR=$(INST_LIB_DIR) -C gps uninstall
+	make INST_LIB_DIR=$(INST_LIB_DIR) -C vl53 uninstall
 
 .PHONY : clean install uninstall
 
