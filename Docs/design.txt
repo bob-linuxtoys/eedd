@@ -166,9 +166,8 @@ structure for each of the plug-in's resources.
 from the underlying driver or piece of equipment.  We don't want
 to wait for the reply so we put the UI session number in uilock.
 This way when the response does come in we know where to send it.
-   By their nature some resources are read-only, read-write, or
-sensor broadcast.  (Some resources could be considered write-only
-but we make these read-write.)  An invalid access generates an
+   By their nature some resources are read-only, read-write,
+write-only, or sensor broadcast. An invalid access generates an
 error message.
    The bkey structure member is a token which, if non-zero,
 indicates that at least one UI session wants to read any broadcast

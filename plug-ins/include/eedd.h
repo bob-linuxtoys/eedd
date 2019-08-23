@@ -53,8 +53,8 @@
 #define ED_PERIODIC      2
 
         // Sizes of the slot array and number of resources per slot
-#define MX_PLUGIN       15     /* maximum # plug-ins per daemon */
-#define MX_RSC          20     /* maximum # resources per plugin */
+#define MX_PLUGIN       25     /* maximum # plug-ins per daemon */
+#define MX_RSC          10     /* maximum # resources per plugin */
 #define MX_SONAME      200     /* maximum # of chars in plug-in file name */
 
 
