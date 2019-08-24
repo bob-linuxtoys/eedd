@@ -272,6 +272,10 @@ void parse_and_execute(UI *pui)
                 prompt(pui->cn);
             }
         }
+        else {    // get command but no callback?  Log it then ignore it.
+            edlog("No get/set callback for resource %s\n", crsc);
+            prompt(pui->cn);
+        }
         // Done.  The plug-in will send the response back to the UI */
         return;
     }
@@ -299,6 +303,10 @@ void parse_and_execute(UI *pui)
             if ((len > 0) && (len < MXRPLY)) {
                 send_ui(rply, len, pui->cn);
             }
+            prompt(pui->cn);
+        }
+        else {    // set command but no callback?  Log it then ignore it.
+            edlog("No get/set callback for resource %s\n", crsc);
             prompt(pui->cn);
         }
         return;
