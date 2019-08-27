@@ -8,6 +8,10 @@ device name, long range measurements, and period at which
 measurements are made.  Incoming range measurements are 
 broadcast in ASCII on the 'range' resource.
 
+NOTE: Only one VL53L0X plug-in can be loaded.  Loading
+more than one instance of this peripheral will result 
+in unexpected results.
+
 
 RESOURCES
 
