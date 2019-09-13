@@ -42,7 +42,7 @@ $(LIB)/%.$(SO_EXT): %.o $(other_objects) readme.h
 	$(CC) $(DEBUG_FLAGS) -Wall $(SO_FLAGS),$@ -o $@ $< $(other_objects)
 
 readme.h: readme.txt
-	echo "char README[] = \"\\" > readme.h
+	echo "static char README[] = \"\\" > readme.h
 	cat readme.txt | sed 's:$$:\\n\\:' >> readme.h
 	echo "\";" >> readme.h
 
