@@ -47,7 +47,7 @@
 #define CMDSTATE         0     /* waiting for command from UI */
 #define RDRPLSTATE       1     /* waiting for hardware reply for a get */
 #define MONSTATE         2     /* Monitoring a sensor */
-    /* prompt char to signifiy completion of previous command */
+    /* prompt char to signify completion of previous command */
 #define PROMPT    '\\'
 
 

@@ -32,11 +32,14 @@ Features of the empty daemon include:
    The daemon listens for TCP connections and then expects one of five
 ASCII commands to sent on the connection.  All commands are terminated
 with a new line.  Commands include:
-   edloadso <plug-in.so>
-   edget <name|ID#> <resource_name>
-   edset <name|ID#> <resource_name> <value>
-   edcat <name|ID#> <resource_name>
-   edlist [name|ID#] 
+   dploadso <plug-in.so>
+   dpget <name|ID#> <resource_name>
+   dpset <name|ID#> <resource_name> <value>
+   dpcat <name|ID#> <resource_name>
+   dplist [name|ID#] 
+
+The Demand Peripherals branch of the empty daemon adds support for
+the DPI line of FPGA-based peripherals.
 
 
 NOMENCLATURE
@@ -60,6 +63,9 @@ of them before you proceed with the rest of the document.
   broadcast with stream of sensor data.
 - monitor - The use of edcat to continuously read broadcast data
   as it is made available.
+- core - An FPGA based peripherals that is given a slot.  Cores
+  are numbered from 0 (the enumerator) up the number of peripherals
+  in the FPGA image.
 
 
 
@@ -123,8 +129,8 @@ code layout.
 
 -- Data Structures
 There are separate data structures for eedd, slots, resources,
-and TCP connections.  As noted above, eedd has connections and
-slots, and slots have resources.
+TCP connections and FPGA peripherals.  As noted above, eedd has
+connections and slots, and slots have resources.
 
    There is exactly one instance of the EEDD data structure in
 the system.  EEDD is the root of a tree with slots/resources
@@ -145,7 +151,7 @@ SLOT data structure has the following fields:
 - RSC      rsc[NUM_RSC];   // Resources visible on this slot
    There are a few fields in SLOT worth mentioning.  The soname comes
 from either the command line (-s option) or a edloadso command.
-   After edserver loads the soname driver file it uses dlsym() to
+   After dpdaemon loads the soname driver file it uses dlsym() to
 look up the location of the "Initialize" function which it then calls.
 Part of each plug-in's initialization sequence is to malloc a data
 structure for that instance of the plug-in.  The plug-in fills in its
@@ -196,9 +202,28 @@ in a sensor cat or bidirectional channel.  The bkey field is
 encoded with the slot and ID of the resource that is locked in an
 edcat session.
 
+   A core is an FPGA based peripheral.  Core are numbered from 0
+to the number of cores (NUM_CORE).  Each core is given a slot for
+its configuration and user access.  When the "enumerator" plug-in
+is loaded it interrogates the FPGA to get a list of the core in
+the FPGA image.  It used this list to automatically load all the
+plug-ins needed for the cores listed.  The core_id is the rank of
+the core/peripheral in the FPGA.  A core will have a corresponding
+slot_id for its plug-in.  The enumerator handles all communication
+to and from the FPGA.  It uses a packet arrival callback (pcb) in
+the peripheral's CORE structure to know where to send the packet.
+Core_id and slot_id are usually NOT the same.  Core has the
+following fields:
+- int   slot_id;      // which eedd slot we're in
+- int   core_id;      // which FPGA peripheral we are
+- char *soname;       // shared object file name for peripheral
+- void *penum;        // so core plug-ins can get to usbFd
+- void (*pcb) ();     // Callback for packet arrival
+
+
 
 -- Algorithms
-   While edserver is fairly simple overall there is one algorithms
+   While dpdaemon is fairly simple overall there is one algorithms
 that you should understand before working on the code.  
 - Broadcast - Some sensors, such as a quadrature decoder can be
 sent to more than one UI TCP connection.  This allows, for example,

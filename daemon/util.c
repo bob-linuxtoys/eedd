@@ -223,6 +223,9 @@ void edlog(
     char    *s2;        // second optional argument
     char    *s3;        // third optional argument
     char    *sptr;      // used to look for %s
+    char     logmsg[MXCMD];
+    int      i;         // generic loop counter
+    int      len;       // length of log message
 
     s1 = (char *) 0;
     s2 = (char *) 0;
@@ -246,9 +249,18 @@ void edlog(
 
     /* Send to stderr if so configured */
     if (UseStderr) {
-        fprintf(stderr, "%s: ", CmdName);
-        fprintf(stderr, format, s1, s2, s3);
-        fprintf(stderr, "\n");
+        // print to a string so we have the option to remove \r
+        len = snprintf(logmsg, (MXCMD -1), format, s1, s2, s3);
+        if (len <= 0) {
+            return;     // error return
+        }
+        for (i = 0; i < len; i++) {   // replace \n\r with null
+            if ((logmsg[i] == '\n') || (logmsg[i] == '\r')) {
+                logmsg[i] = (char) 0;
+                break;
+            }
+        }
+        fprintf(stderr, "%s\n", logmsg);
     }
     else {
         syslog(LOG_WARNING, format, s1, s2, s3);
@@ -399,7 +411,7 @@ struct timeval *doTimer()
         edlog("eedd internal timer error");
         return ((struct timeval *) 0);
     }
-    // Return 0 for an immediate timeout if we missed a timeoout
+    // Return 0 for an immediate timeout if we missed a timeout
     if ((nextto - now) < 0L) {     // next timeout is in the past (CPU hog?)
         nextto = now;
     }
@@ -478,7 +490,7 @@ void *add_timer(        // address of timer struct allocated
 void del_timer(
     void    *ptimer)
 {
-    // Verify pointer is in range and on struct boundry
+    // Verify pointer is in range and on struct boundary
     if ((ptimer < (void *) &Timers[0]) || (ptimer > (void *) &Timers[MX_TIMER -1])) {
         return;
     }

@@ -1,0 +1,25 @@
+AAMP Test Procedure
+
+Setup
+    1. Connect an AAMP daughter card to the correct slot
+       on the BaseBoard as defined by the DPCore.bin file
+    2. Launch dpdaemon.
+    3. Ensure that speakers and a sound source are connected
+       to the AAMP daughter card.
+  
+Procedure
+    1.  Apply power to the AAMP daughter card.
+    2.  Ensure that no sound can be heard and the LED is off.
+    3.  Set the max volume:  dpset aamp volume 22
+    4.  Ensure that sound can be heard.
+    5.  Reduce the volume four times in increments of 5.
+    6.  Ensure that the volume reduces with each new volume setting.
+    7.  Disable the amp: dpset aamp enabled 0
+    8.  Ensure that no sound can be heard.
+    9.  Re-enable the the amp: dpset aamp enabled 1
+    10. Ensure that the sound returns to the last volume setting.
+    11. Turn on the LED: dpset aamp led 1
+    12. Ensure the LED turns on.
+    13. Turn off the LED: dpset aamp led 0
+    14. Ensure the LED turns off.
+

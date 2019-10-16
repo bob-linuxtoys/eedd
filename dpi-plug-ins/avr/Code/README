@@ -1,0 +1,30 @@
+This folder contains code in the following directories that are specific 
+to the DP AVR peripheral (see the Demand Peripherals wiki for more details):
+
+  include
+    Contains the following header files that implement communication facilities 
+    between the AVR and the dpserver daemon.
+    
+    dpavr.h
+      This header file implements the "host registers" that are the basis
+      of dpserver-to-AVR communications.
+      
+    dpavrusart.h
+      This header file provides basic AVR code to use the on-chip USART0 to
+      perform communications with an external terminal emulator via the Tx and
+      Rx pins.  This "console" functionality provides an excellent way to help
+      debug any DP AVR application by allowing messages to be sent.
+    
+  samples
+    Contains the following sample AVR application code that illustrates the usage 
+    of the AVR-to-dpserver communitation facilities:
+    
+    led
+      This application is a very basic example of an LED flashing application 
+      that can be controlled via the command line with dpserver.  
+      
+    fifo
+      This application implements a basic fifo that connects the command line 
+      to the AVR USART0 (using the Tx/Rx signals) which can be seen using an 
+      external terminal emulation application.
+

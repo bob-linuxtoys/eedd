@@ -21,6 +21,8 @@
 #ifndef EEDD_H_
 #define EEDD_H_
 
+#include "dpdaemon.h"          // for CORE definition
+
 
 /***************************************************************************
  *  - Defines
@@ -57,6 +59,12 @@
 #define MX_RSC          10     /* maximum # resources per plugin */
 #define MX_SONAME      200     /* maximum # of chars in plug-in file name */
 
+        // Verbosity levels
+#define ED_VERB_OFF      0     /* no verbose output at all */
+#define ED_VERB_WARN     1     /* give errors and warnings */
+#define ED_VERB_INFO     2     /* give normal progress output */
+#define ED_VERB_TRACE    3     /* trace internal processing */
+
 
 /***************************************************************************
  *  - Data structures  (please see design.txt for more explanation)
@@ -79,6 +87,7 @@ typedef struct {
     void     *priv;            // Pointer to plug-in's private data
     char      soname[MX_SONAME];// shared object file name
     RSC       rsc[MX_RSC];     // Resources visible to this slot
+    CORE     *pcore;           // CORE pointer valid only if an FPGA peripheral
 } SLOT;
 
 
