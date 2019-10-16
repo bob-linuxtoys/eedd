@@ -86,11 +86,24 @@ void parse_and_execute(UI *pui)
     int      bkey;       // broadcast key = slot/rsc
     RSC     *prsc;       // a plug-in's resource table or a single rsc
     char     rply[MXRPLY]; // reply back to the UI on error
+    int      i;          // generic loop counter
 
 
-    if ((pui->cmd == 0) || (pui->cmd[0] == 0) ||
-        (pui->cmd[0] == '\n') || (pui->cmd[0] == '\r'))
-        return;   // nothing to do
+    if ((pui->cmd == 0) || (pui->cmd[0] == 0) || (pui->cmdindx >= MXCMD) ||
+        (pui->cmd[0] == '\n') || (pui->cmd[0] == '\r')) {
+        return;   // nothing to do or an error
+    }
+
+    // Show/log commands if really verbose
+    if (Verbosity >= ED_VERB_WARN) {
+        for (i = 0; i < pui->cmdindx; i++) {   // replace \n\r with null
+            if ((pui->cmd[i] == '\n') || (pui->cmd[i] == '\r')) {
+                pui->cmd[i] = (char) 0;
+                break;
+            }
+        }
+        edlog("COMMAND : %s", pui->cmd);
+    }
 
     /* Tokenize the input line */
     ccmd  = strtok_r(pui->cmd, " \t\n\r", &saveptr);
@@ -272,10 +285,6 @@ void parse_and_execute(UI *pui)
                 prompt(pui->cn);
             }
         }
-        else {    // get command but no callback?  Log it then ignore it.
-            edlog("No get/set callback for resource %s\n", crsc);
-            prompt(pui->cn);
-        }
         // Done.  The plug-in will send the response back to the UI */
         return;
     }
@@ -303,10 +312,6 @@ void parse_and_execute(UI *pui)
             if ((len > 0) && (len < MXRPLY)) {
                 send_ui(rply, len, pui->cn);
             }
-            prompt(pui->cn);
-        }
-        else {    // set command but no callback?  Log it then ignore it.
-            edlog("No get/set callback for resource %s\n", crsc);
             prompt(pui->cn);
         }
         return;
@@ -408,6 +413,12 @@ void send_ui(
     /* Sanity checks */
     if ((len < 0) || (cn < 0) || (cn >= MX_UI) || (UiCons[cn].fd < 0)) {
         return;   // nothing to do or bogus request
+    }
+    buf[len] = (char) 0;  // make it a null terminated string
+
+    // Show/log commands if really verbose
+    if (Verbosity >= ED_VERB_INFO) {
+        edlog("RESPONSE: %s\n", buf);
     }
 
     while (len) {
@@ -664,9 +675,6 @@ int add_so(
     return(-1);
 }
 
-#ifndef LIB_DIR
-#define LIB_DIR "/usr/local/lib/"
-#endif
 
 /***************************************************************************
  *  initslot()  - Load .so file and call init function for it
@@ -698,7 +706,7 @@ void initslot(                          // Load and init this slot
 
     // Try to open the .so file.
     dlerror();                  /* Clear any existing error */
-    handle = dlopen(pluginpath, RTLD_NOW);
+    handle = dlopen(pluginpath, RTLD_NOW | RTLD_GLOBAL);
     pslot->handle = handle;
     if (handle == NULL) {
         edlog(M_BADSO, pluginpath);
@@ -709,8 +717,7 @@ void initslot(                          // Load and init this slot
     // get the runtime address of the Initialize function and call it.
     dlerror();                  /* Clear any existing error */
     *(void **) (&Initialize) = dlsym(handle, "Initialize");
-    errmsg = dlerror();         /* this is the correct way to check for 
-                                   errors */
+    errmsg = dlerror();         /* correct way to check for errors */
     if (errmsg != NULL) {
         edlog(M_BADSYMB, "'Initialize'", pslot->soname);
         pslot->soname[0] = (char) 0;  // void this bogus plug-in entry

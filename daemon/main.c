@@ -33,8 +33,8 @@
  * options:
  *  -e, --stderr           Route messages to stderr instead of log even if running in
  *                         background (i.e. no stderr redirection).
- *  -v, --verbosity        Set the verbosity level of messages: 0 (errors), 1 (+debug),
- *                         2 (+ warnings), or 3 (+ info), default = 0.
+ *  -v, --verbosity        Set the verbosity level of messages: 0 (errors), 1 (+commands),
+ *                         2 (+ responses), 3 (+ internal trace), default = 0.
  *  -d, --debug            Enable debug mode.
  *  -f, --foreground       Stay in foreground.
  *  -a, --listen_any       Listen for incoming UI connections on any IP address
@@ -137,8 +137,8 @@ int main(int argc, char *argv[])
 
     // Add plug-ins here to always have them when the program starts
     // The first loaded is in slot 0, the next in slot 1, ...
-    //(void) add_so(eedd.so);      // slot 0
-    //(void) add_so(gamepad.so);   // slot 1
+    (void) add_so("enumerator.so");   // slot 0
+    //(void) add_so("gamepad.so");      // first available slot after FPGA slots
 
     // Parse the command line and set global flags 
     processcmdline(argc, argv);
@@ -257,10 +257,13 @@ void processcmdline(int argc, char *argv[])
 
             case 'v':
                 Verbosity = atoi(optarg);
+                Verbosity = (Verbosity < ED_VERB_OFF)  ? ED_VERB_OFF : Verbosity;
+                Verbosity = (Verbosity > ED_VERB_TRACE) ? ED_VERB_TRACE : Verbosity;
                 break;
 
             case 'd':
                 DebugMode = 1;
+                ForegroundMode = 1;
                 break;
 
             case 'f':

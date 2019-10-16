@@ -1,7 +1,7 @@
 #
 #  Name: Makefile
 #
-#  Description: This is the Makefile for the empdy daemon
+#  Description: This is the Makefile for the empty daemon
 #
 #  Copyright:   Copyright (C) 2019 by Demand Peripherals, Inc.
 #               All rights reserved.

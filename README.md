@@ -1,5 +1,10 @@
-# eedd
-An Event-Driven Daemon with CLI
+# dpdaemon
+
+dpdaemon used the empty daemon framework for FPGA based
+peripheral control and status.
+
+
+EEDD: An Event-Driven Daemon with CLI
 
 EEDD is an empty event-driven daemon. It is empty in the
 sense that the daemon itself provides just a command line
