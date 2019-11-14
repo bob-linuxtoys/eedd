@@ -137,8 +137,8 @@ int main(int argc, char *argv[])
 
     // Add plug-ins here to always have them when the program starts
     // The first loaded is in slot 0, the next in slot 1, ...
-    (void) add_so("enumerator.so");   // slot 0
-    //(void) add_so("gamepad.so");      // first available slot after FPGA slots
+    //(void) add_so("gamepad.so");      // first available slot (0)
+    //(void) add_so("tts.so");          // second available slot (1)
 
     // Parse the command line and set global flags 
     processcmdline(argc, argv);
