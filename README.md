@@ -1,8 +1,4 @@
-# dpdaemon
-
-dpdaemon used the empty daemon framework for FPGA based
-peripheral control and status.
-
+# eddaemon
 
 EEDD: An Event-Driven Daemon with CLI
 

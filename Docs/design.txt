@@ -38,8 +38,6 @@ with a new line.  Commands include:
    dpcat <name|ID#> <resource_name>
    dplist [name|ID#] 
 
-The Demand Peripherals branch of the empty daemon adds support for
-the DPI line of FPGA-based peripherals.
 
 
 NOMENCLATURE
