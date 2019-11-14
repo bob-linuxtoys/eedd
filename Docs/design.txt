@@ -149,7 +149,7 @@ SLOT data structure has the following fields:
 - RSC      rsc[NUM_RSC];   // Resources visible on this slot
    There are a few fields in SLOT worth mentioning.  The soname comes
 from either the command line (-s option) or a edloadso command.
-   After dpdaemon loads the soname driver file it uses dlsym() to
+   After eddaemon loads the soname driver file it uses dlsym() to
 look up the location of the "Initialize" function which it then calls.
 Part of each plug-in's initialization sequence is to malloc a data
 structure for that instance of the plug-in.  The plug-in fills in its
@@ -221,7 +221,7 @@ following fields:
 
 
 -- Algorithms
-   While dpdaemon is fairly simple overall there is one algorithms
+   While eddaemon is fairly simple overall there is one algorithms
 that you should understand before working on the code.  
 - Broadcast - Some sensors, such as a quadrature decoder can be
 sent to more than one UI TCP connection.  This allows, for example,
